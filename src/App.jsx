@@ -120,7 +120,7 @@ const defaultState = {
 
   username: '',
   password: '',
-  usersToFollowFollowersOf: ['lostleblanc', 'sam_kolder', 'bomkanari'],
+  usersToFollowFollowersOf: ['lostleblanc', 'samkolder', 'bomkanari'],
 };
 
 const App = memo(() => {
