@@ -81,6 +81,7 @@
       "build/**/*"
     ],
     "appId": "no.mifi.simpleinstabot",
+    "artifactName": "${productName}-${os}.${ext}",
     "mac": {
       "target": "dmg",
       "icon": "icon-build/app-512.png"
