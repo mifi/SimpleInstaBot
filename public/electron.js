@@ -49,7 +49,7 @@ async function initInstauto({
     newPage: async () => pie.getPage(pieBrowser, window),
   };
 
-  const appDataPath = app.getPath('appData');
+  const appDataPath = app.getPath('userData');
 
   const options = {
     cookiesPath: join(appDataPath, './cookies.json'),
