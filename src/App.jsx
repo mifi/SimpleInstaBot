@@ -227,7 +227,7 @@ const App = memo(() => {
 
                 <div style={{ width: '50%', margin: '10px 10px' }}>
                   <div style={{ margin: '20px 0' }}>
-                    <Label style={{ display: 'block' }}>List of usernames that we should follow the followers of. Can be celebrities etc. SimpleInstaBot will go into each of these accounts and find their recent followers and follow up to {advancedSettings.maxFollowsPerUser} of these, in hope that they will follow back. Then after a {advancedSettings.dontUnfollowUntilDaysElapsed} days it will unfollow them again. The more users, the more diversity.</Label>
+                    <Label style={{ display: 'block' }}>List of usernames that we should follow the followers of. Can be celebrities etc, users with a lot of followers. SimpleInstaBot will go into each of these accounts and find their recent followers and follow up to {advancedSettings.maxFollowsPerUser} of these, in hope that they will follow back. Then after a {advancedSettings.dontUnfollowUntilDaysElapsed} days it will unfollow them again. The more users, the more diversity.</Label>
                     <TagInput
                       inputProps={{ placeholder: 'Follow users followers' }}
                       values={usersToFollowFollowersOf}
