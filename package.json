@@ -2,7 +2,7 @@
   "name": "simpleinstabot",
   "productName": "SimpleInstaBot",
   "description": "Simple Instagram bot",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
   "author": {
     "name": "Mikael Finstad",
@@ -95,7 +95,7 @@
         "tar.bz2",
         "snap",
         "AppImage"
-      ]  
+      ]
     }
   }
 }
