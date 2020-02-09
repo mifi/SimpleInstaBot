@@ -1,6 +1,16 @@
 # SimpleInstaBot
 
-Get more followers
+Use a robot to attract more followers. Now as a simple desktop app!
+
+## Download
+
+- [Mac OS X](https://github.com/mifi/SimpleInstaBot/releases/latest/download/SimpleInstaBot-mac.dmg)
+- [Windows](https://github.com/mifi/SimpleInstaBot/releases/latest/download/SimpleInstaBot-win.exe)
+- [Linux AppImage](https://github.com/mifi/SimpleInstaBot/releases/latest/download/SimpleInstaBot-linux.AppImage)
+- [Linux tar.tz](https://github.com/mifi/SimpleInstaBot/releases/latest/download/SimpleInstaBot-linux.tar.bz2)
+
+## See also
+- [instauto](https://github.com/mifi/instauto)
 
 ## Credits
 
