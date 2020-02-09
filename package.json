@@ -1,0 +1,101 @@
+{
+  "name": "simpleinstabot",
+  "productName": "SimpleInstaBot",
+  "description": "Simple Instagram bot",
+  "version": "1.0.0",
+  "license": "MIT",
+  "author": {
+    "name": "Mikael Finstad",
+    "email": "finstaden@gmail.com",
+    "url": "https://mifi.no"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mifi/SimpleInstaBot.git"
+  },
+  "main": "public/electron.js",
+  "homepage": "./",
+  "dependencies": {
+    "electron-is-dev": "^1.1.0",
+    "evergreen-ui": "^4.21.5",
+    "execa": "^4.0.0",
+    "framer-motion": "^1.7.0",
+    "fs-extra": "^8.1.0",
+    "instauto": "^4.7.3",
+    "lodash": "^4.17.11",
+    "moment": "^2.24.0",
+    "prop-types": "^15.7.2",
+    "puppeteer-core": "^2.1.1",
+    "puppeteer-in-electron": "^1.0.8",
+    "random-color": "^1.0.1",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
+    "react-icons": "^3.4.0",
+    "react-lottie": "^1.2.3",
+    "react-scripts": "^3.3.0",
+    "sweetalert2": "^9.5.4",
+    "tempy": "^0.3.0"
+  },
+  "scripts": {
+    "start": "concurrently -k \"BROWSER=none PORT=3001 react-scripts start\" \"wait-on http://localhost:3001 && electron .\"",
+    "icon-gen": "mkdir -p icon-build && svg2png src/icon.svg -o ./icon-build/app-512.png -w 512 -h 512",
+    "build": "yarn icon-gen && react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "lint": "eslint --ext .jsx --ext .js .",
+    "pack-mac": "electron-builder --mac",
+    "prepack-mac": "yarn build",
+    "pack-win": "electron-builder --win",
+    "prepack-win": "yarn build",
+    "pack-linux": "electron-builder --linux",
+    "prepack-linux": "yarn build",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      "electron 7.0"
+    ],
+    "development": [
+      "electron 7.0"
+    ]
+  },
+  "devDependencies": {
+    "concurrently": "^4.1.0",
+    "electron": "^7.1.7",
+    "electron-builder": "^21.2.0",
+    "electron-devtools-installer": "^2.2.4",
+    "eslint": "^6.6.0",
+    "eslint-config-airbnb": "^18.0.1",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.14.3",
+    "eslint-plugin-react-hooks": "^1.7.0",
+    "svg2png": "^4.1.1",
+    "wait-on": "^3.2.0"
+  },
+  "build": {
+    "files": [
+      "build/**/*"
+    ],
+    "appId": "no.mifi.simpleinstabot",
+    "mac": {
+      "target": "dmg",
+      "icon": "icon-build/app-512.png"
+    },
+    "win": {
+      "target": "portable",
+      "icon": "icon-build/app-512.png"
+    },
+    "linux": {
+      "icon": "icon-build/app-512.png",
+      "target": [
+        "tar.bz2",
+        "snap",
+        "AppImage"
+      ]  
+    }
+  }
+}
