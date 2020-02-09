@@ -9,6 +9,8 @@ Use a robot to attract more followers. Now as a simple desktop app!
 - [Linux AppImage](https://github.com/mifi/SimpleInstaBot/releases/latest/download/SimpleInstaBot-linux.AppImage)
 - [Linux tar.tz](https://github.com/mifi/SimpleInstaBot/releases/latest/download/SimpleInstaBot-linux.tar.bz2)
 
+After installing you may need to right click the application icon and then "Open" in order to bypass the "Unsigned app" dialog.
+
 ## Credits
 
 Animations by:
