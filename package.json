@@ -92,9 +92,7 @@
     "linux": {
       "icon": "icon-build/app-512.png",
       "target": [
-        "tar.bz2",
-        "snap",
-        "AppImage"
+        "tar.bz2"
       ]
     }
   }
