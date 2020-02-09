@@ -9,13 +9,17 @@ Use a robot to attract more followers. Now as a simple desktop app!
 - [Linux AppImage](https://github.com/mifi/SimpleInstaBot/releases/latest/download/SimpleInstaBot-linux.AppImage)
 - [Linux tar.tz](https://github.com/mifi/SimpleInstaBot/releases/latest/download/SimpleInstaBot-linux.tar.bz2)
 
-## See also
-- [instauto](https://github.com/mifi/instauto)
-
 ## Credits
 
 Animations by:
 - https://lottiefiles.com/juanmakes
 - https://lottiefiles.com/user/180952
 - https://lottiefiles.com/aanhamdani
-- Icons made by [Freepik](https://www.flaticon.com/authors/freepik) from [www.flaticon.com](https://www.flaticon.com/)
+
+Icons made by [Freepik](https://www.flaticon.com/authors/freepik) from [www.flaticon.com](https://www.flaticon.com/)
+
+## See also
+- [instauto](https://github.com/mifi/instauto)
+- https://instagrambot.github.io/
+- https://socialmanager.tools/
+- https://gramup.me/
