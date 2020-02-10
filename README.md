@@ -2,6 +2,8 @@
 
 Use a robot to attract more followers. Now as a simple desktop app!
 
+![Demo](https://github.com/mifi/SimpleInstaBot/raw/master/screenshot.jpg)
+
 ## Download
 
 - [Mac OS X](https://github.com/mifi/SimpleInstaBot/releases/latest/download/SimpleInstaBot-mac.dmg)
