@@ -2,7 +2,7 @@
   "name": "simpleinstabot",
   "productName": "SimpleInstaBot",
   "description": "Simple Instagram bot",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "license": "MIT",
   "author": {
     "name": "Mikael Finstad",
@@ -83,7 +83,7 @@
     ],
     "appId": "no.mifi.simpleinstabot",
     "artifactName": "${productName}-${os}.${ext}",
-		"afterSign": "electron-builder-notarize",
+    "afterSign": "electron-builder-notarize",
     "mac": {
       "hardenedRuntime": true,
       "target": "dmg",
