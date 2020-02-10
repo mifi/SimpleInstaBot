@@ -11,8 +11,8 @@ import loveLottie from './13682-heart.json';
 
 const electron = window.require('electron');
 
-const { initInstauto, runFollowUserFollowers } = electron.remote.require('./electron');
-
+const { initInstauto, runFollowUserFollowers, cleanupInstauto, checkHaveCookies, deleteCookies } = electron.remote.require('./electron');
+const configStore = electron.remote.require('./store');
 
 const AdvancedSettings = memo(({ advancedSettings, onChange }) => {
   const [advancedSettingsTxt, setAdvancedSettingsTxt] = useState();
@@ -100,53 +100,53 @@ const AdvancedSettings = memo(({ advancedSettings, onChange }) => {
   )
 });
 
-const defaultState = {
-  maxFollowsPerHour: 100,
-  maxFollowsPerDay: 300,
-  followUserRatioMin: 0.2,
-  followUserRatioMax: 4.0,
-  followUserMaxFollowers: null,
-  followUserMaxFollowing: null,
-  followUserMinFollowers: null,
-  followUserMinFollowing: null,
-
-  maxFollowsPerUser: 10,
-  skipPrivate: true,
-
-  dontUnfollowUntilDaysElapsed: 5,
-  runAtHour: 10,
-
-  dryRun: false,
-
-  username: '',
-  password: '',
-  usersToFollowFollowersOf: ['lostleblanc', 'samkolder', 'bomkanari'],
-};
-
 const App = memo(() => {
+  const [advancedSettings, setAdvancedSettings] = useState({
+    maxFollowsPerDay: configStore.get('maxFollowsPerDay'),
+    maxFollowsPerHour: configStore.get('maxFollowsPerHour'),
+    followUserRatioMin: configStore.get('followUserRatioMin'),
+    followUserRatioMax: configStore.get('followUserRatioMax'),
+    followUserMaxFollowers: configStore.get('followUserMaxFollowers'),
+    followUserMaxFollowing: configStore.get('followUserMaxFollowing'),
+    followUserMinFollowers: configStore.get('followUserMinFollowers'),
+    followUserMinFollowing: configStore.get('followUserMinFollowing'),
+    dontUnfollowUntilDaysElapsed: configStore.get('dontUnfollowUntilDaysElapsed'),
+    maxFollowsPerUser: configStore.get('maxFollowsPerUser'),
+    runAtHour: configStore.get('runAtHour'),
+  });
+
+  useEffect(() => configStore.set('maxFollowsPerDay', advancedSettings.maxFollowsPerDay), [advancedSettings.maxFollowsPerDay]);
+  useEffect(() => configStore.set('maxFollowsPerHour', advancedSettings.maxFollowsPerHour), [advancedSettings.maxFollowsPerHour]);
+  useEffect(() => configStore.set('followUserRatioMin', advancedSettings.followUserRatioMin), [advancedSettings.followUserRatioMin]);
+  useEffect(() => configStore.set('followUserRatioMax', advancedSettings.followUserRatioMax), [advancedSettings.followUserRatioMax]);
+  useEffect(() => configStore.set('followUserMaxFollowers', advancedSettings.followUserMaxFollowers), [advancedSettings.followUserMaxFollowers]);
+  useEffect(() => configStore.set('followUserMaxFollowing', advancedSettings.followUserMaxFollowing), [advancedSettings.followUserMaxFollowing]);
+  useEffect(() => configStore.set('followUserMinFollowers', advancedSettings.followUserMinFollowers), [advancedSettings.followUserMinFollowers]);
+  useEffect(() => configStore.set('followUserMinFollowing', advancedSettings.followUserMinFollowing), [advancedSettings.followUserMinFollowing]);
+  useEffect(() => configStore.set('dontUnfollowUntilDaysElapsed', advancedSettings.dontUnfollowUntilDaysElapsed), [advancedSettings.dontUnfollowUntilDaysElapsed]);
+  useEffect(() => configStore.set('maxFollowsPerUser', advancedSettings.maxFollowsPerUser), [advancedSettings.maxFollowsPerUser]);
+  useEffect(() => configStore.set('runAtHour', advancedSettings.runAtHour), [advancedSettings.runAtHour]);
+
+  const [haveCookies, setHaveCookies] = useState(false);
+  const [dryRun, setDryRun] = useState(false);
   const [running, setRunning] = useState(false);
   const [advancedVisible, setAdvancedVisible] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
-  const [advancedSettings, setAdvancedSettings] = useState({
-    maxFollowsPerDay: defaultState.maxFollowsPerDay,
-    maxFollowsPerHour: defaultState.maxFollowsPerHour,
-    followUserRatioMin: defaultState.followUserRatioMin,
-    followUserRatioMax: defaultState.followUserRatioMax,
-    followUserMaxFollowers: defaultState.followUserMaxFollowers,
-    followUserMaxFollowing: defaultState.followUserMaxFollowing,
-    followUserMinFollowers: defaultState.followUserMinFollowers,
-    followUserMinFollowing: defaultState.followUserMinFollowing,
-    dontUnfollowUntilDaysElapsed: defaultState.dontUnfollowUntilDaysElapsed,
-    maxFollowsPerUser: defaultState.maxFollowsPerUser,
-    runAtHour: defaultState.runAtHour,
-  });
-  const [dryRun, setDryRun] = useState(defaultState.dryRun);
-  const [username, setUsername] = useState(defaultState.username);
-  const [password, setPassword] = useState(defaultState.password);
-  const [skipPrivate, setSkipPrivate] = useState(defaultState.skipPrivate);
-  const [usersToFollowFollowersOf, setUsersToFollowFollowersOf] = useState(defaultState.usersToFollowFollowersOf);
+  const [skipPrivate, setSkipPrivate] = useState(configStore.get('skipPrivate'));
+  const [usersToFollowFollowersOf, setUsersToFollowFollowersOf] = useState(configStore.get('usersToFollowFollowersOf'));
+
+  useEffect(() => configStore.set('skipPrivate', skipPrivate), [skipPrivate]);
+  useEffect(() => configStore.set('usersToFollowFollowersOf', usersToFollowFollowersOf), [usersToFollowFollowersOf]);
+
+  const isUsersValid = usersToFollowFollowersOf.length >= 1;
 
   async function onStartPress() {
+    if (!isUsersValid) {
+      Swal.fire('Please add at least 1 username to the list!');
+      return;
+    }
     if (running) {
       electron.remote.app.quit();
       return;
@@ -178,7 +178,21 @@ const App = memo(() => {
       Swal.fire('Failed to run');
     } finally {
       setRunning(false);
+      cleanupInstauto();
     }
+  }
+
+  async function updateCookiesState() {
+    setHaveCookies(await checkHaveCookies());
+  }
+
+  useEffect(() => {
+    updateCookiesState();
+  }, []);
+
+  async function onLogoutClick() {
+    await deleteCookies();
+    await updateCookiesState()
   }
 
   return (
@@ -193,7 +207,7 @@ const App = memo(() => {
               />
 
               <div style={{ fontSize: 27 }}>Your bot is running</div>
-              <div>Check the other window!</div>
+              <div style={{ margin: '20px 0' }}>Leave this application running on your computer and keep it connected to power and prevent it from sleeping and the bot will work for you while you are doing more useful things</div>
             </div>
           ) : (
             <>
@@ -204,34 +218,41 @@ const App = memo(() => {
                     style={{ width: 150, height: 150 }}
                   />
 
-                  <TextInputField
-                    isInvalid={username.length < 1}
-                    value={username}
-                    onChange={e => setUsername(e.target.value)}
-                    label="Instagram username"
-                    autoCapitalize="off"
-                    autoCorrect="off"
-                    spellCheck={false}
-                  />
+                  {haveCookies ? (
+                    <Button iconBefore="log-out" type="button" intent="danger" onClick={onLogoutClick}>Log out</Button>
+                  ) : (
+                    <>
+                      <TextInputField
+                        isInvalid={username.length < 1}
+                        value={username}
+                        onChange={e => setUsername(e.target.value)}
+                        label="Instagram username"
+                        autoCapitalize="off"
+                        autoCorrect="off"
+                        spellCheck={false}
+                      />
 
-                  <TextInputField
-                    value={password}
-                    isInvalid={password.length < 4}
-                    onChange={e => setPassword(e.target.value)}
-                    type="password"
-                    label="Password"
-                  />
+                      <TextInputField
+                        value={password}
+                        isInvalid={password.length < 4}
+                        onChange={e => setPassword(e.target.value)}
+                        type="password"
+                        label="Password"
+                      />
+                    </>
+                  )}
 
                   <Button iconBefore="settings" type="button" onClick={() => setAdvancedVisible(true)}>Show advanced settings</Button>
                 </div>
 
                 <div style={{ width: '50%', margin: '10px 10px' }}>
                   <div style={{ margin: '20px 0' }}>
-                    <Label style={{ display: 'block' }}>List of usernames that we should follow the followers of. Can be celebrities etc, users with a lot of followers. SimpleInstaBot will go into each of these accounts and find their recent followers and follow up to {advancedSettings.maxFollowsPerUser} of these, in hope that they will follow back. Then after a {advancedSettings.dontUnfollowUntilDaysElapsed} days it will unfollow them again. The more users, the more diversity.</Label>
+                    <Label style={{ display: 'block' }}>List of usernames that we should follow the followers of. Can be celebrities etc, users with a lot of followers. SimpleInstaBot will go into each of these accounts and find their recent followers and follow up to {advancedSettings.maxFollowsPerUser} of these, in hope that they will follow back. Then after a {advancedSettings.dontUnfollowUntilDaysElapsed} days it will unfollow them again. The more users, the more diversity. <b>Press ENTER between each username</b></Label>
                     <TagInput
                       inputProps={{ placeholder: 'Follow users followers' }}
                       values={usersToFollowFollowersOf}
                       onChange={setUsersToFollowFollowersOf}
+                      separator={/[,\s]/}
                     />
                   </div>
 
@@ -256,8 +277,8 @@ const App = memo(() => {
               </div>
 
               <div>
-                When your press the start button the bot will start immediately, then repeated every day (24hr) at {advancedSettings.runAtHour}:00 until the program is stopped.<br />
-                Note: Be sure to run this on a normal home internet connection (E.g not in the cloud), or you will risk being banned. Do not use a VPN<br />
+                When your press the start button the bot will start immediately, then repeat every day (24hr) at {advancedSettings.runAtHour}:00 until the program is stopped.<br />
+                Note: Be sure to run this on a normal home internet connection (e.g not in the cloud), or you will risk being banned. Do not use a VPN.<br />
               </div>
               <div style={{ margin: '10px 0', fontSize: 12 }}>
                 I am not responsible for any consequences for you or your instagram account by using this bot.
@@ -271,7 +292,7 @@ const App = memo(() => {
 
           <div>
             <h3>Troubleshooting</h3>
-            If it's not working, make sure your instagram language is set to english.
+            If it's not working, make sure your instagram language is set to english. Also check that all usernames are correct.
           </div>
 
           <div style={{ position: 'fixed', right: 0, bottom: 5, background: 'rgba(255,255,255,0.6)' }}>

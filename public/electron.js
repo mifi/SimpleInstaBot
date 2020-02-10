@@ -5,6 +5,7 @@ const pie = require('puppeteer-in-electron');
 const puppeteer = require('puppeteer-core');
 const { join } = require('path');
 const assert = require('assert');
+const fs = require('fs-extra');
 
 const Instauto = require('instauto');
 const moment = require('moment');
@@ -15,6 +16,7 @@ let mainWindow;
 
 let pieBrowser;
 let instauto;
+let instautoWindow;
 
 async function initPieBrowser() {
   // Must be called before electron is ready
@@ -22,6 +24,22 @@ async function initPieBrowser() {
 }
 
 initPieBrowser().catch(console.error);
+
+function getFilePath(rel) {
+  return join(app.getPath('userData'), rel);
+}
+
+function getCookiesPath() {
+  return getFilePath('cookies.json');
+}
+
+async function checkHaveCookies() {
+  return fs.exists(getCookiesPath());
+}
+
+async function deleteCookies() {
+  return fs.unlink(getCookiesPath());
+}
 
 async function initInstauto({
   username,
@@ -38,23 +56,25 @@ async function initInstauto({
   excludeUsers,
   dryRun,
 }) {
-  const window = new BrowserWindow({
+  instautoWindow = new BrowserWindow({
     x: 0,
     y: 0,
+    webPreferences: {
+      partition: 'instauto', // So that we have a separate session 
+    }
   });
-  // const url = "https://instagram.com/";
-  // await window.loadURL(url);
+
+  const { session } = instautoWindow.webContents;
+  await session.clearStorageData(); // we store cookies etc separately
  
   const b = { // TODO improve API in instauto to accept page instead of browser?
-    newPage: async () => pie.getPage(pieBrowser, window),
+    newPage: async () => pie.getPage(pieBrowser, instautoWindow),
   };
 
-  const appDataPath = app.getPath('userData');
-
   const options = {
-    cookiesPath: join(appDataPath, './cookies.json'),
-    followedDbPath: join(appDataPath, './followed.json'),
-    unfollowedDbPath: join(appDataPath, './unfollowed.json'),
+    cookiesPath: getCookiesPath(),
+    followedDbPath: getFilePath('followed.json'),
+    unfollowedDbPath: getFilePath('./unfollowed.json'),
   
     username,
     password,
@@ -72,11 +92,13 @@ async function initInstauto({
     dryRun,
   };
 
+  mainWindow.focus();
+
   instauto = await Instauto(b, options);
 }
 
 function cleanupInstauto() {
-  window.destroy();
+  instautoWindow.destroy();
   // TODO deinit more
   instauto = undefined;
 }
@@ -129,16 +151,12 @@ async function runFollowUserFollowers({
 
     await sleepUntilNextDay();
   }
-
-  // TODO never called now
-  cleanupInstauto();
 }
 
 
 function createWindow() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    alwaysOnTop: !isDev,
     width: 800,
     height: 700,
     webPreferences: {
@@ -191,4 +209,7 @@ app.on('activate', () => {
 module.exports = {
   initInstauto,
   runFollowUserFollowers,
+  cleanupInstauto,
+  checkHaveCookies,
+  deleteCookies,
 };
