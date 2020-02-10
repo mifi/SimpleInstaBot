@@ -66,6 +66,7 @@
     "concurrently": "^4.1.0",
     "electron": "^7.1.7",
     "electron-builder": "^22.3.2",
+    "electron-builder-notarize": "^1.1.2",
     "electron-devtools-installer": "^2.2.4",
     "eslint": "^6.6.0",
     "eslint-config-airbnb": "^18.0.1",
@@ -82,7 +83,9 @@
     ],
     "appId": "no.mifi.simpleinstabot",
     "artifactName": "${productName}-${os}.${ext}",
+		"afterSign": "electron-builder-notarize",
     "mac": {
+      "hardenedRuntime": true,
       "target": "dmg",
       "icon": "icon-build/app-512.png"
     },
