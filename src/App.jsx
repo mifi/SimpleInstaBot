@@ -11,6 +11,7 @@ import loveLottie from './13682-heart.json';
 
 const electron = window.require('electron');
 
+const { powerSaveBlocker } = electron.remote.require('electron');
 const { initInstauto, runFollowUserFollowers, cleanupInstauto, checkHaveCookies, deleteCookies } = electron.remote.require('./electron');
 const configStore = electron.remote.require('./store');
 
@@ -154,6 +155,8 @@ const App = memo(() => {
 
     setRunning(true);
 
+    const powerSaveBlockerId = powerSaveBlocker.start('prevent-app-suspension');
+
     try {
       await initInstauto({
         ...advancedSettings,
@@ -179,6 +182,7 @@ const App = memo(() => {
     } finally {
       setRunning(false);
       cleanupInstauto();
+      powerSaveBlocker.stop(powerSaveBlockerId);
     }
   }
 
