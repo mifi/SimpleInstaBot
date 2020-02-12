@@ -1,8 +1,24 @@
-# SimpleInstaBot
+# SimpleInstaBot 🤖
 
 Use a robot to attract more followers. Now as a simple desktop app!
 
 ![Demo](https://github.com/mifi/SimpleInstaBot/raw/master/screenshot.jpg)
+
+## How does it work?
+
+It runs as a desktop application on your computer and will every day follow up to 300 users (configurable) who are following some users whose market you want to target. Then after 5 days (also configurable), it will unfollow the users.
+
+## Features
+
+What makes it different from other bots?
+
+- Easy to use
+- Free and open source
+- Runs on your own computer, to reduce the risk of being banned. Instagram is known to crack down on cloud and VPN IPs
+- Built for all major desktop platforms
+- Built on [instauto](https://github.com/mifi/instauto) which is proven to work and has not triggered a ban for 2 years
+- Automatic rate limiting
+- Configurable
 
 ## Download
 
@@ -23,7 +39,6 @@ Animations by:
 Icons made by [Freepik](https://www.flaticon.com/authors/freepik) from [www.flaticon.com](https://www.flaticon.com/)
 
 ## See also
-- [instauto](https://github.com/mifi/instauto)
 - https://instagrambot.github.io/
 - https://socialmanager.tools/
 - https://gramup.me/
