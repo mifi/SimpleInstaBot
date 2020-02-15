@@ -134,13 +134,15 @@ async function runFollowUserFollowers({
 
   for (;;) {
     try {
+      await instauto.unfollowOldFollowed({ ageInDays });
+
+      await instauto.sleep(10 * 60 * 1000);
+
       // Now go through each of these and follow a certain amount of their followers
       for (const username of shuffleArray(usernames)) {
         await instauto.followUserFollowers(username, { maxFollowsPerUser, skipPrivate });
         await instauto.sleep(10 * 60 * 1000);
       }
-
-      await instauto.unfollowOldFollowed({ ageInDays });
   
       console.log('Done running');
   
