@@ -29,6 +29,10 @@ What makes it different from other bots?
 
 NOTE: After installing you may need to right click the application icon and then "Open" in order to bypass "Untrusted app" dialogs. This is because Microsoft requires a $300/year certificate just to remove this block (I'm not going to pay for that.) Alternatively try to google `windows run untrusted app`.
 
+## Known issues
+
+- Many people are getting Action Blocked these days with this bot as well as other bots (it seems even people just following strangers.) Instagram is tightening their rules by not allowing promiscuous behavior like following and liking strangers' photos anymore, and imposing temp blocks when they think you crossed the limit. See [#1](https://github.com/mifi/SimpleInstaBot/issues/1)
+
 ## Credits
 
 Animations by:
