@@ -15,7 +15,7 @@ const store = new Store({
     followUserMinFollowing: null,
     dontUnfollowUntilDaysElapsed: 5,
     maxFollowsPerUser: 10,
-    runAtHour: 10,  
+    runAtHour: 10,
   }
 });
 
