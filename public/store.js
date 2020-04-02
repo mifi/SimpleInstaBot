@@ -5,8 +5,8 @@ const store = new Store({
     skipPrivate: true,
     usersToFollowFollowersOf: ['lostleblanc', 'samkolder', 'bomkanari'],
 
-    maxFollowsPerHour: 100,
-    maxFollowsPerDay: 300,
+    maxFollowsPerHour: 20,
+    maxFollowsPerDay: 150,
     followUserRatioMin: 0.2,
     followUserRatioMax: 4.0,
     followUserMaxFollowers: null,
