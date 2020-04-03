@@ -1,4 +1,4 @@
-import React, { memo, useState, useEffect } from 'react';
+import React, { memo, useState, useEffect, useRef } from 'react';
 import { Button, TextInputField, SideSheet, TagInput, Checkbox, Badge, Label, Textarea } from 'evergreen-ui';
 import Swal from 'sweetalert2';
 
@@ -138,6 +138,12 @@ const App = memo(() => {
   const [skipPrivate, setSkipPrivate] = useState(configStore.get('skipPrivate'));
   const [usersToFollowFollowersOf, setUsersToFollowFollowersOf] = useState(configStore.get('usersToFollowFollowersOf'));
 
+  const [logs, setLogs] = useState([]);
+  const logViewRef = useRef();
+  useEffect(() => {
+    if (logViewRef.current) logViewRef.current.scrollTop = logViewRef.current.scrollHeight;
+  }, [logs]);
+
   useEffect(() => configStore.set('skipPrivate', skipPrivate), [skipPrivate]);
   useEffect(() => configStore.set('usersToFollowFollowersOf', usersToFollowFollowersOf), [usersToFollowFollowersOf]);
 
@@ -157,6 +163,19 @@ const App = memo(() => {
 
     const powerSaveBlockerId = powerSaveBlocker.start('prevent-app-suspension');
 
+    function log(level, ...args) {
+      console[level](...args);
+      setLogs((l) => [...l, { level, args }]);
+    }
+
+    const logger = {
+      log: (...args) => log('log', ...args),
+      error: (...args) => log('error', ...args),
+      warn: (...args) => log('warn', ...args),
+      info: (...args) => log('info', ...args),
+      debug: (...args) => log('debug', ...args),
+    };
+
     try {
       await initInstauto({
         ...advancedSettings,
@@ -167,6 +186,8 @@ const App = memo(() => {
       
         username,
         password,
+
+        logger,
       });
 
       await runFollowUserFollowers({
@@ -177,8 +198,8 @@ const App = memo(() => {
         runAtHour: advancedSettings.runAtHour,
       });
     } catch (err) {
-      console.error(err);
-      Swal.fire('Failed to run');
+      logger.error(err);
+      Swal.fire({ icon: 'error', title: 'Failed to run', text: 'Try to log out and log back in or restart the app' });
     } finally {
       setRunning(false);
       cleanupInstauto();
@@ -212,6 +233,14 @@ const App = memo(() => {
 
               <div style={{ fontSize: 27 }}>Your bot is running</div>
               <div style={{ margin: '20px 0' }}>Leave this application running on your computer and keep it connected to power and prevent it from sleeping and the bot will work for you while you are doing more useful things</div>
+
+              <div ref={logViewRef} style={{ width: '100%', height: 100, overflowY: 'scroll', overflowX: 'hidden', fontSize: 10, textAlign: 'left' }}>
+                {logs.map(({ args }, i) => (
+                  <div key={i} style={{ whiteSpace: 'pre-wrap' }}>
+                    {args.map(arg => String(arg)).join(' ')}
+                  </div>
+                ))}
+              </div>
             </div>
           ) : (
             <>
@@ -293,6 +322,7 @@ const App = memo(() => {
           <div style={{ margin: '20px 0', textAlign: 'center' }}>
             <Button iconBefore={running ? 'stop' : 'play'} height={40} type="button" intent={running ? 'danger' : 'success'} onClick={onStartPress}>{running ? 'Stop bot' : 'Start bot'}</Button>
           </div>
+
 
           <div>
             <h3>Troubleshooting</h3>

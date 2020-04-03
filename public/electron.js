@@ -17,6 +17,7 @@ let mainWindow;
 let pieBrowser;
 let instauto;
 let instautoWindow;
+let logger = console;
 
 async function initPieBrowser() {
   // Must be called before electron is ready
@@ -55,6 +56,7 @@ async function initInstauto({
   followUserMinFollowing,
   excludeUsers,
   dryRun,
+  logger: loggerArg,
 }) {
   instautoWindow = new BrowserWindow({
     x: 0,
@@ -90,17 +92,21 @@ async function initInstauto({
     dontUnfollowUntilTimeElapsed: dontUnfollowUntilDaysElapsed * 24 * 60 * 60 * 1000,
     excludeUsers,
     dryRun,
+
+    logger: loggerArg,
   };
 
   mainWindow.focus();
 
   instauto = await Instauto(b, options);
+  logger = loggerArg;
 }
 
 function cleanupInstauto() {
   instautoWindow.destroy();
   // TODO deinit more
   instauto = undefined;
+  logger = undefined;
 }
 
 function shuffleArray(array) {
@@ -127,16 +133,16 @@ async function runFollowUserFollowers({
   
   async function sleepUntilNextDay() {
     const msUntilNextRun = getMsUntilNextRun();
-    console.log(`Sleeping ${msUntilNextRun / (60 * 60 * 1000)} hours...`);
+    logger.log(`Sleeping ${msUntilNextRun / (60 * 60 * 1000)} hours...`);
     await new Promise(resolve => setTimeout(resolve, msUntilNextRun));
-    console.log('Done sleeping, running...');
+    logger.log('Done sleeping, running...');
   }  
 
   for (;;) {
     try {
-      await instauto.unfollowOldFollowed({ ageInDays });
+      const unfollowedCount = await instauto.unfollowOldFollowed({ ageInDays });
 
-      await instauto.sleep(10 * 60 * 1000);
+      if (unfollowedCount > 0) await instauto.sleep(10 * 60 * 1000);
 
       // Now go through each of these and follow a certain amount of their followers
       for (const username of shuffleArray(usernames)) {
@@ -144,11 +150,11 @@ async function runFollowUserFollowers({
         await instauto.sleep(10 * 60 * 1000);
       }
   
-      console.log('Done running');
+      logger.log('Done running');
   
       await instauto.sleep(30000);
     } catch (err) {
-      console.error(err);
+      logger.error(err);
     }
 
     await sleepUntilNextDay();
