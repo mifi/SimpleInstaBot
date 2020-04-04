@@ -78,6 +78,10 @@ async function initInstauto({
   };
 
   const options = {
+    // Testing
+    // randomizeUserAgent: false,
+    // userAgent: 'Mozilla/5.0 (Linux; Android 9; RMX1971) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.136 Mobile Safari/537.36',
+
     cookiesPath: getCookiesPath(),
     followedDbPath: getFilePath('followed.json'),
     unfollowedDbPath: getFilePath('./unfollowed.json'),

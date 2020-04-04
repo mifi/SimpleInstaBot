@@ -6082,14 +6082,14 @@ inquirer@^7.0.0:
     strip-ansi "^5.1.0"
     through "^2.3.6"
 
-instauto@^4.10.1:
-  version "4.10.1"
-  resolved "https://registry.yarnpkg.com/instauto/-/instauto-4.10.1.tgz#d69c240fd3bb90f1487ed0fb11695a408a5c2c1b"
-  integrity sha512-YGc0lqHqhnZl4DD/dkBhTU0a1EZkprfKHW1m+Mzk5FFvcAucGwqkK/DHBr/yv2gZ5CrJSmYu5RRsDE09efX/Ow==
+instauto@^4.11.2:
+  version "4.11.2"
+  resolved "https://registry.yarnpkg.com/instauto/-/instauto-4.11.2.tgz#2b3afe7aedcd83eadd86fa29c2285d6cfc04b9d9"
+  integrity sha512-aNcJFjcFFONXkrInAR7KX/Bv7U0fCQG+Abt2PVEEbJULipaZ//NlV+3rHkr3eg8eHVm1dGNRB3Y+omJblVLfRg==
   dependencies:
     fs-extra "^5.0.0"
     lodash "^4.17.10"
-    user-agents "^1.0.366"
+    user-agents "^1.0.559"
 
 internal-ip@^4.3.0:
   version "4.3.0"
@@ -11742,10 +11742,10 @@ use@^3.1.0:
   resolved "https://registry.yarnpkg.com/use/-/use-3.1.1.tgz#d50c8cac79a19fbc20f2911f56eb973f4e10070f"
   integrity sha512-cwESVXlO3url9YWlFW/TA9cshCEhtu7IKJ/p5soJ/gGpj7vbvFrAY/eIioQ6Dw23KjZhYgiIo8HOs1nQ2vr/oQ==
 
-user-agents@^1.0.366:
-  version "1.0.527"
-  resolved "https://registry.yarnpkg.com/user-agents/-/user-agents-1.0.527.tgz#1206be814be5ff049ddc45ebfeec836857c13c7b"
-  integrity sha512-sThHASx0PDK1gr9AoYOMZ3V6/R8sA0nrQD0OnBu1Alel6ks2TZvYDRB4wpMKh4TN+UxoR3Ne4aMt+0xAwYgW/Q==
+user-agents@^1.0.559:
+  version "1.0.559"
+  resolved "https://registry.yarnpkg.com/user-agents/-/user-agents-1.0.559.tgz#389817f79dff667d9e5c8803631c41043e8eccd8"
+  integrity sha512-HdAlNS3vDxOGMRwmv8or05xL96MV3CEwQhUSFTCRoOvTOEnWhTEBPAHRry/xZpVTTOtx77UHMal8YKcx6fs7Lg==
   dependencies:
     dot-json "^1.2.0"
     lodash.clonedeep "^4.5.0"

@@ -249,7 +249,7 @@ const App = memo(() => {
       });
     } catch (err) {
       logger.error(err);
-      Swal.fire({ icon: 'error', title: 'Failed to run', text: 'Check logs, then try to log out and log back in or restart the app.' });
+      await Swal.fire({ icon: 'error', title: 'Failed to run', text: 'Check logs, then try to log out and log back in or restart the app.' });
       await onLogoutClick();
     } finally {
       setRunning(false);
