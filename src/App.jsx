@@ -1,6 +1,7 @@
-import React, { memo, useState, useEffect, useRef } from 'react';
-import { Button, TextInputField, SideSheet, TagInput, Checkbox, Badge, Label, Textarea } from 'evergreen-ui';
+import React, { memo, useState, useEffect, useRef, useMemo } from 'react';
+import { Button, TextInputField, SideSheet, TagInput, Checkbox, Badge, Label, Textarea, Text } from 'evergreen-ui';
 import Swal from 'sweetalert2';
+import moment from 'moment';
 
 import Lottie from 'react-lottie';
 
@@ -101,6 +102,33 @@ const AdvancedSettings = memo(({ advancedSettings, onChange }) => {
   )
 });
 
+const LogView = memo(({ logs, style, fontSize } = {}) => {
+  const logViewRef = useRef();
+  useEffect(() => {
+    if (logViewRef.current) logViewRef.current.scrollTop = logViewRef.current.scrollHeight;
+  }, [logs]);
+
+  return (
+    <div ref={logViewRef} style={{ width: '100%', height: 100, overflowY: 'scroll', overflowX: 'hidden', textAlign: 'left', ...style }}>
+      {logs.map(({ args, level, time }, i) => {
+        const color = {
+          warn: 'warning',
+          error: 'danger',
+        }[level] || undefined;
+
+        return (
+          <div>
+            <Text style={{ marginRight: 5, whiteSpace: 'pre-wrap', fontSize }}>{moment(time).format('LT')}</Text>
+            <Text color={color} key={i} style={{ whiteSpace: 'pre-wrap', fontSize }}>
+              {args.map(arg => String(arg)).join(' ')}
+            </Text>
+          </div>
+        );
+      })}
+    </div>
+  );
+});
+
 const App = memo(() => {
   const [advancedSettings, setAdvancedSettings] = useState({
     maxFollowsPerDay: configStore.get('maxFollowsPerDay'),
@@ -132,6 +160,7 @@ const App = memo(() => {
   const [dryRun, setDryRun] = useState(false);
   const [running, setRunning] = useState(false);
   const [advancedVisible, setAdvancedVisible] = useState(false);
+  const [logsVisible, setLogsVisible] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -139,15 +168,27 @@ const App = memo(() => {
   const [usersToFollowFollowersOf, setUsersToFollowFollowersOf] = useState(configStore.get('usersToFollowFollowersOf'));
 
   const [logs, setLogs] = useState([]);
-  const logViewRef = useRef();
-  useEffect(() => {
-    if (logViewRef.current) logViewRef.current.scrollTop = logViewRef.current.scrollHeight;
-  }, [logs]);
+
+  const usersToFollowFollowersOfCleaned = useMemo(() => usersToFollowFollowersOf.map(user => user.replace(/^@/g, '')), [usersToFollowFollowersOf]);
 
   useEffect(() => configStore.set('skipPrivate', skipPrivate), [skipPrivate]);
   useEffect(() => configStore.set('usersToFollowFollowersOf', usersToFollowFollowersOf), [usersToFollowFollowersOf]);
 
   const isUsersValid = usersToFollowFollowersOf.length >= 1;
+
+
+  async function updateCookiesState() {
+    setHaveCookies(await checkHaveCookies());
+  }
+
+  useEffect(() => {
+    updateCookiesState();
+  }, []);
+
+  async function onLogoutClick() {
+    await deleteCookies();
+    await updateCookiesState();
+  }
 
   async function onStartPress() {
     if (!isUsersValid) {
@@ -155,17 +196,26 @@ const App = memo(() => {
       return;
     }
     if (running) {
-      electron.remote.app.quit();
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: 'This will terminate the bot and you will lose any logs',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Stop the bot',
+        cancelButtonText: 'Leave it running',
+      });
+      if (result.value) electron.remote.app.quit();
       return;
     }
 
+    setLogs([]);
     setRunning(true);
 
     const powerSaveBlockerId = powerSaveBlocker.start('prevent-app-suspension');
 
     function log(level, ...args) {
       console[level](...args);
-      setLogs((l) => [...l, { level, args }]);
+      setLogs((l) => [...l, { time: new Date(), level, args }]);
     }
 
     const logger = {
@@ -191,7 +241,7 @@ const App = memo(() => {
       });
 
       await runFollowUserFollowers({
-        usernames: usersToFollowFollowersOf,
+        usernames: usersToFollowFollowersOfCleaned,
         ageInDays: advancedSettings.dontUnfollowUntilDaysElapsed,
         maxFollowsPerUser: advancedSettings.maxFollowsPerUser,
         skipPrivate,
@@ -199,25 +249,13 @@ const App = memo(() => {
       });
     } catch (err) {
       logger.error(err);
-      Swal.fire({ icon: 'error', title: 'Failed to run', text: 'Try to log out and log back in or restart the app' });
+      Swal.fire({ icon: 'error', title: 'Failed to run', text: 'Check logs, then try to log out and log back in or restart the app.' });
+      await onLogoutClick();
     } finally {
       setRunning(false);
       cleanupInstauto();
       powerSaveBlocker.stop(powerSaveBlockerId);
     }
-  }
-
-  async function updateCookiesState() {
-    setHaveCookies(await checkHaveCookies());
-  }
-
-  useEffect(() => {
-    updateCookiesState();
-  }, []);
-
-  async function onLogoutClick() {
-    await deleteCookies();
-    await updateCookiesState()
   }
 
   return (
@@ -234,13 +272,7 @@ const App = memo(() => {
               <div style={{ fontSize: 27 }}>Your bot is running</div>
               <div style={{ margin: '20px 0' }}>Leave this application running on your computer and keep it connected to power and prevent it from sleeping and the bot will work for you while you are doing more useful things</div>
 
-              <div ref={logViewRef} style={{ width: '100%', height: 100, overflowY: 'scroll', overflowX: 'hidden', fontSize: 10, textAlign: 'left' }}>
-                {logs.map(({ args }, i) => (
-                  <div key={i} style={{ whiteSpace: 'pre-wrap' }}>
-                    {args.map(arg => String(arg)).join(' ')}
-                  </div>
-                ))}
-              </div>
+              <LogView fontSize={10} logs={logs} />
             </div>
           ) : (
             <>
@@ -282,7 +314,7 @@ const App = memo(() => {
                   <div style={{ margin: '20px 0' }}>
                     <Label style={{ display: 'block' }}>List of usernames that we should follow the followers of. Can be celebrities etc, users with a lot of followers. SimpleInstaBot will go into each of these accounts and find their recent followers and follow up to {advancedSettings.maxFollowsPerUser} of these, in hope that they will follow back. Then after a {advancedSettings.dontUnfollowUntilDaysElapsed} days it will unfollow them again. The more users, the more diversity. <b>Press ENTER between each username</b></Label>
                     <TagInput
-                      inputProps={{ placeholder: 'Follow users followers' }}
+                      inputProps={{ placeholder: "Influencers, celebrities, etc." }}
                       values={usersToFollowFollowersOf}
                       onChange={setUsersToFollowFollowersOf}
                       separator={/[,\s]/}
@@ -310,8 +342,9 @@ const App = memo(() => {
               </div>
 
               <div>
-                When your press the start button the bot will start immediately, then repeat every day (24hr) at {advancedSettings.runAtHour}:00 until the program is stopped.<br />
-                Note: Be sure to run this on a normal home internet connection (e.g not in the cloud), or you will risk being banned. Do not use a VPN.<br />
+                When your press the Start button the bot will start immediately, then repeat every day (24hr) at {advancedSettings.runAtHour}:00 until the program is stopped.<br />
+                Note: Be sure to run this on a normal home internet connection, or you will increase the risk being banned. Do not use a VPN.<br />
+                <b>If possible use same internet connection as you normally use your Instagram mobile app</b><br />
               </div>
               <div style={{ margin: '10px 0', fontSize: 12 }}>
                 I am not responsible for any consequences for you or your instagram account by using this bot.
@@ -321,6 +354,7 @@ const App = memo(() => {
 
           <div style={{ margin: '20px 0', textAlign: 'center' }}>
             <Button iconBefore={running ? 'stop' : 'play'} height={40} type="button" intent={running ? 'danger' : 'success'} onClick={onStartPress}>{running ? 'Stop bot' : 'Start bot'}</Button>
+            {logs.length > 0 && <Button iconBefore="list" height={40} type="button" onClick={() => setLogsVisible(true)}>Logs</Button>}
           </div>
 
 
@@ -346,7 +380,15 @@ const App = memo(() => {
 
           <AdvancedSettings advancedSettings={advancedSettings} onChange={setAdvancedSettings} />
 
-          <Button iconBefore="cross" type="button" onClick={() => setAdvancedVisible(false)}>Close</Button>
+          <Button iconBefore="tick" type="button" onClick={() => setAdvancedVisible(false)}>Save &amp; Close</Button>
+        </div>
+      </SideSheet>
+
+      <SideSheet isShown={logsVisible} onCloseComplete={() => setLogsVisible(false)}>
+        <div style={{ margin: 20 }}>
+          <h3>Logs from last run</h3>
+
+          <LogView logs={logs} fontSize={13} style={{ height: '100%' }} />
         </div>
       </SideSheet>
     </>

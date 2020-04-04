@@ -39,7 +39,11 @@ async function checkHaveCookies() {
 }
 
 async function deleteCookies() {
-  return fs.unlink(getCookiesPath());
+  try {
+    await fs.unlink(getCookiesPath());
+  } catch (err) {
+    logger.warn('Unable to delete cookies', err);
+  }
 }
 
 async function initInstauto({
