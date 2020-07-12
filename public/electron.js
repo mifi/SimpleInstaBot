@@ -10,11 +10,13 @@ const fs = require('fs-extra');
 const Instauto = require('instauto');
 const moment = require('moment');
 
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
 
 let pieBrowser;
+let instautoDb;
 let instauto;
 let instautoWindow;
 let logger = console;
@@ -46,12 +48,34 @@ async function deleteCookies() {
   }
 }
 
+async function initInstautoDb() {
+  instautoDb = await Instauto.JSONDB({
+    followedDbPath: getFilePath('followed.json'),
+    unfollowedDbPath: getFilePath('unfollowed.json'),
+    likedPhotosDbPath: getFilePath('liked-photos.json'),
+  });
+}
+
+function getInstautoData() {
+  const dayMs = 24 * 60 * 60 * 1000;
+
+  return {
+    numTotalFollowedUsers: instautoDb.getTotalFollowedUsers(),
+    numTotalUnfollowedUsers: instautoDb.getTotalUnfollowedUsers(),
+    numFollowedLastDay: instautoDb.getFollowedLastTimeUnit(dayMs).length,
+    numUnfollowedLastDay: instautoDb.getUnfollowedLastTimeUnit(dayMs).length,
+    numTotalLikedPhotos: instautoDb.getTotalLikedPhotos(),
+    numLikedLastDay: instautoDb.getLikedPhotosLastTimeUnit(dayMs).length,
+  };
+}
+
 async function initInstauto({
   username,
   password,
   dontUnfollowUntilDaysElapsed,
   maxFollowsPerHour,
   maxFollowsPerDay,
+  maxLikesPerDay,
   followUserRatioMin,
   followUserRatioMax,
   followUserMaxFollowers,
@@ -66,13 +90,13 @@ async function initInstauto({
     x: 0,
     y: 0,
     webPreferences: {
-      partition: 'instauto', // So that we have a separate session 
-    }
+      partition: 'instauto', // So that we have a separate session
+    },
   });
 
   const { session } = instautoWindow.webContents;
   await session.clearStorageData(); // we store cookies etc separately
- 
+
   const b = { // TODO improve API in instauto to accept page instead of browser?
     newPage: async () => pie.getPage(pieBrowser, instautoWindow),
   };
@@ -83,14 +107,13 @@ async function initInstauto({
     // userAgent: 'Mozilla/5.0 (Linux; Android 9; RMX1971) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.136 Mobile Safari/537.36',
 
     cookiesPath: getCookiesPath(),
-    followedDbPath: getFilePath('followed.json'),
-    unfollowedDbPath: getFilePath('./unfollowed.json'),
-  
+
     username,
     password,
 
     maxFollowsPerHour,
     maxFollowsPerDay,
+    maxLikesPerDay,
     followUserRatioMin,
     followUserRatioMax,
     followUserMaxFollowers,
@@ -106,27 +129,20 @@ async function initInstauto({
 
   mainWindow.focus();
 
-  instauto = await Instauto(b, options);
+  instauto = await Instauto(instautoDb, b, options);
   logger = loggerArg;
 }
 
 function cleanupInstauto() {
   instautoWindow.destroy();
-  // TODO deinit more
+  // TODO deinit more?
+  // instautoDb = undefined;
   instauto = undefined;
   logger = undefined;
 }
 
-function shuffleArray(array) {
-  for (let i = array.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]]; // eslint-disable-line no-param-reassign
-  }
-  return array;
-}
-
-async function runFollowUserFollowers({
-  usernames, ageInDays, maxFollowsPerUser, skipPrivate, runAtHour,
+async function runBot({
+  usernames, ageInDays, skipPrivate, runAtHour, maxLikesPerUser, maxFollowsTotal,
 }) {
   assert(instauto);
 
@@ -138,28 +154,33 @@ async function runFollowUserFollowers({
     if (isAfterHour) nextRunTime.add(1, 'day');
     return (1 + ((Math.random() - 0.5) * 0.1)) * nextRunTime.diff(now);
   }
-  
+
   async function sleepUntilNextDay() {
     const msUntilNextRun = getMsUntilNextRun();
     logger.log(`Sleeping ${msUntilNextRun / (60 * 60 * 1000)} hours...`);
     await new Promise(resolve => setTimeout(resolve, msUntilNextRun));
     logger.log('Done sleeping, running...');
-  }  
+  }
 
   for (;;) {
     try {
-      const unfollowedCount = await instauto.unfollowOldFollowed({ ageInDays });
+      // Leave room for some follows too
+      const unfollowLimit = Math.floor(maxFollowsTotal / 3);
+      const unfollowedCount = await instauto.unfollowOldFollowed({ ageInDays, limit: unfollowLimit });
 
       if (unfollowedCount > 0) await instauto.sleep(10 * 60 * 1000);
+      const likingEnabled = maxLikesPerUser != null && maxLikesPerUser >= 1;
 
-      // Now go through each of these and follow a certain amount of their followers
-      for (const username of shuffleArray(usernames)) {
-        await instauto.followUserFollowers(username, { maxFollowsPerUser, skipPrivate });
-        await instauto.sleep(10 * 60 * 1000);
-      }
-  
+      await instauto.followUsersFollowers({
+        usersToFollowFollowersOf: usernames,
+        maxFollowsTotal: maxFollowsTotal - unfollowedCount,
+        skipPrivate,
+        enableLikeImages: likingEnabled,
+        likeImagesMax: likingEnabled ? maxLikesPerUser : undefined,
+      });
+
       logger.log('Done running');
-  
+
       await instauto.sleep(30000);
     } catch (err) {
       logger.error(err);
@@ -224,7 +245,9 @@ app.on('activate', () => {
 
 module.exports = {
   initInstauto,
-  runFollowUserFollowers,
+  initInstautoDb,
+  getInstautoData,
+  runBot,
   cleanupInstauto,
   checkHaveCookies,
   deleteCookies,

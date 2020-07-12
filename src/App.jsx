@@ -1,22 +1,51 @@
 import React, { memo, useState, useEffect, useRef, useMemo } from 'react';
-import { Button, TextInputField, SideSheet, TagInput, Checkbox, Badge, Label, Textarea, Text } from 'evergreen-ui';
+import { Button, TextInputField, SideSheet, TagInput, Checkbox, Badge, Label, Textarea } from 'evergreen-ui';
 import Swal from 'sweetalert2';
 import moment from 'moment';
 
 import Lottie from 'react-lottie';
 
-import runningLottie from './14470-phone-running.json'
-import robotLottie from './10178-c-bot.json'
+import runningLottie from './14470-phone-running.json';
+import robotLottie from './10178-c-bot.json';
 import robotDizzyLottie from './13680-robot-call.json';
 import loveLottie from './13682-heart.json';
 
 const electron = window.require('electron');
 
 const { powerSaveBlocker } = electron.remote.require('electron');
-const { initInstauto, runFollowUserFollowers, cleanupInstauto, checkHaveCookies, deleteCookies } = electron.remote.require('./electron');
+const { initInstautoDb, initInstauto, runBot, cleanupInstauto, checkHaveCookies, deleteCookies, getInstautoData } = electron.remote.require('./electron');
 const configStore = electron.remote.require('./store');
 
-const AdvancedSettings = memo(({ advancedSettings, onChange }) => {
+
+const StatisticsBanner = memo(({ data: { numFollowedLastDay, numTotalFollowedUsers, numUnfollowedLastDay, numTotalUnfollowedUsers, numLikedLastDay, numTotalLikedPhotos } }) => {
+  const headingStyle = { marginBottom: 5, color: '#7c3c21' };
+  const statStyle = { minWidth: 30, paddingRight: 5, fontWeight: 400, fontSize: 24, color: '#303960' };
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center' }}>
+      <div style={{ margin: 20 }}>
+        <div style={headingStyle}>Followed users</div>
+        <div style={{ display: 'flex', alignItems: 'center' }}><div style={statStyle}>{numFollowedLastDay}</div>Last 24h</div>
+        <div style={{ display: 'flex', alignItems: 'center' }}><div style={statStyle}>{numTotalFollowedUsers}</div>Total</div>
+      </div>
+
+      <div style={{ margin: 20 }}>
+        <div style={headingStyle}>Unfollowed users</div>
+        <div style={{ display: 'flex', alignItems: 'center' }}><div style={statStyle}>{numUnfollowedLastDay}</div>Last 24h</div>
+        <div style={{ display: 'flex', alignItems: 'center' }}><div style={statStyle}>{numTotalUnfollowedUsers}</div>Total</div>
+      </div>
+
+      <div style={{ margin: 20 }}>
+        <div style={headingStyle}>Liked photos</div>
+        <div style={{ display: 'flex', alignItems: 'center' }}><div style={statStyle}>{numLikedLastDay}</div>Last 24h</div>
+        <div style={{ display: 'flex', alignItems: 'center' }}><div style={statStyle}>{numTotalLikedPhotos}</div>Total</div>
+      </div>
+    </div>
+  );
+});
+
+const AdvancedSettings = memo(({
+  advancedSettings, onChange, dryRun, setDryRun,
+}) => {
   const [advancedSettingsTxt, setAdvancedSettingsTxt] = useState();
   const [valid, setValid] = useState(true);
 
@@ -34,36 +63,40 @@ const AdvancedSettings = memo(({ advancedSettings, onChange }) => {
     }
   }
 
+  const tooHighWarning = 'NOTE: setting this too high may cause Action Blocked';
   const optsData = {
     dontUnfollowUntilDaysElapsed: {
-      description: "Don't unfollow already followed users until the number of days have passed",
+      description: 'Automatically unfollow auto-followed users after this number of days',
     },
     followUserMinFollowing: {
-      description: "Don't follow users who follow less people than this",
+      description: 'Skip users who follow less users than this',
     },
     followUserMinFollowers: {
-      description: "Don't follow users who have less followers than this",
+      description: 'Skip users who have less followers than this',
     },
     followUserMaxFollowers: {
-      description: "Don't follow users who have more followers than this",
+      description: 'Skip users who have more followers than this',
     },
     followUserMaxFollowing: {
-      description: "Don't follow users who are following more than this",
+      description: 'Skip users who are following more than this',
     },
     followUserRatioMin: {
-      description: "Don't follow users that have a followers / following ratio lower than this",
+      description: 'Skip users that have a followers/following ratio lower than this',
     },
     followUserRatioMax: {
-      description: "Don't follow users that have a followers / following ratio higher than this",
+      description: 'Skip users that have a followers/following ratio higher than this',
     },
     maxFollowsPerHour: {
-      description: 'Global limit that prevents follow or unfollows (total) to exceed this number over a sliding window of one hour.  NOTE setting this too high will cause temp ban/throttle',
+      description: `Limit follow and unfollow operations per hour. ${tooHighWarning}`,
     },
     maxFollowsPerDay: {
-      description: 'Global limit that prevents follow or unfollows (total) to exceed this number over a sliding window of 24h. NOTE setting this too high will cause temp ban/throttle',
+      description: `Limit follow and unfollow operations over 24 hours. ${tooHighWarning}`,
     },
-    maxFollowsPerUser: {
-      description: "How many of each celeb user's followers to follow",
+    maxLikesPerUser: {
+      description: 'Like up to this number of photos on each user\'s profile. Set to 0 to deactivate liking photos',
+    },
+    maxLikesPerDay: {
+      description: `Limit total photo likes per 24 hours. ${tooHighWarning}`,
     },
     runAtHour: {
       description: 'Repeat at this hour (24hr based) every day',
@@ -98,8 +131,16 @@ const AdvancedSettings = memo(({ advancedSettings, onChange }) => {
         onChange={onTextareaChange}
         value={advancedSettingsTxt != null ? advancedSettingsTxt : JSON.stringify(advancedSettings, null, 2)}
       />
+
+      <div style={{ margin: '30px 0' }}>
+        <Checkbox
+          label="Dry run - if checked, will not actually perform any actions (useful for testing)"
+          checked={dryRun}
+          onChange={e => setDryRun(e.target.checked)}
+        />
+      </div>
     </>
-  )
+  );
 });
 
 const LogView = memo(({ logs, style, fontSize } = {}) => {
@@ -112,16 +153,17 @@ const LogView = memo(({ logs, style, fontSize } = {}) => {
     <div ref={logViewRef} style={{ width: '100%', height: 100, overflowY: 'scroll', overflowX: 'hidden', textAlign: 'left', ...style }}>
       {logs.map(({ args, level, time }, i) => {
         const color = {
-          warn: 'warning',
-          error: 'danger',
-        }[level] || undefined;
+          warn: '#f37121',
+          error: '#d92027',
+        }[level] || 'rgba(0,0,0,0.6)';
 
         return (
-          <div>
-            <Text style={{ marginRight: 5, whiteSpace: 'pre-wrap', fontSize }}>{moment(time).format('LT')}</Text>
-            <Text color={color} key={i} style={{ whiteSpace: 'pre-wrap', fontSize }}>
+          // eslint-disable-next-line react/no-array-index-key
+          <div key={i}>
+            <span style={{ marginRight: 5, whiteSpace: 'pre-wrap', fontSize }}>{moment(time).format('LT')}</span>
+            <span style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all', fontSize, color }}>
               {args.map(arg => String(arg)).join(' ')}
-            </Text>
+            </span>
           </div>
         );
       })}
@@ -133,6 +175,8 @@ const App = memo(() => {
   const [advancedSettings, setAdvancedSettings] = useState({
     maxFollowsPerDay: configStore.get('maxFollowsPerDay'),
     maxFollowsPerHour: configStore.get('maxFollowsPerHour'),
+    maxLikesPerDay: configStore.get('maxLikesPerDay'),
+    maxLikesPerUser: configStore.get('maxLikesPerUser'),
     followUserRatioMin: configStore.get('followUserRatioMin'),
     followUserRatioMax: configStore.get('followUserRatioMax'),
     followUserMaxFollowers: configStore.get('followUserMaxFollowers'),
@@ -140,12 +184,17 @@ const App = memo(() => {
     followUserMinFollowers: configStore.get('followUserMinFollowers'),
     followUserMinFollowing: configStore.get('followUserMinFollowing'),
     dontUnfollowUntilDaysElapsed: configStore.get('dontUnfollowUntilDaysElapsed'),
-    maxFollowsPerUser: configStore.get('maxFollowsPerUser'),
     runAtHour: configStore.get('runAtHour'),
   });
 
+  function setAdvancedSetting(key, value) {
+    setAdvancedSettings(s => ({ ...s, [key]: value }));
+  }
+
   useEffect(() => configStore.set('maxFollowsPerDay', advancedSettings.maxFollowsPerDay), [advancedSettings.maxFollowsPerDay]);
   useEffect(() => configStore.set('maxFollowsPerHour', advancedSettings.maxFollowsPerHour), [advancedSettings.maxFollowsPerHour]);
+  useEffect(() => configStore.set('maxLikesPerDay', advancedSettings.maxLikesPerDay), [advancedSettings.maxLikesPerDay]);
+  useEffect(() => configStore.set('maxLikesPerUser', advancedSettings.maxLikesPerUser), [advancedSettings.maxLikesPerUser]);
   useEffect(() => configStore.set('followUserRatioMin', advancedSettings.followUserRatioMin), [advancedSettings.followUserRatioMin]);
   useEffect(() => configStore.set('followUserRatioMax', advancedSettings.followUserRatioMax), [advancedSettings.followUserRatioMax]);
   useEffect(() => configStore.set('followUserMaxFollowers', advancedSettings.followUserMaxFollowers), [advancedSettings.followUserMaxFollowers]);
@@ -153,7 +202,6 @@ const App = memo(() => {
   useEffect(() => configStore.set('followUserMinFollowers', advancedSettings.followUserMinFollowers), [advancedSettings.followUserMinFollowers]);
   useEffect(() => configStore.set('followUserMinFollowing', advancedSettings.followUserMinFollowing), [advancedSettings.followUserMinFollowing]);
   useEffect(() => configStore.set('dontUnfollowUntilDaysElapsed', advancedSettings.dontUnfollowUntilDaysElapsed), [advancedSettings.dontUnfollowUntilDaysElapsed]);
-  useEffect(() => configStore.set('maxFollowsPerUser', advancedSettings.maxFollowsPerUser), [advancedSettings.maxFollowsPerUser]);
   useEffect(() => configStore.set('runAtHour', advancedSettings.runAtHour), [advancedSettings.runAtHour]);
 
   const [haveCookies, setHaveCookies] = useState(false);
@@ -169,19 +217,34 @@ const App = memo(() => {
 
   const [logs, setLogs] = useState([]);
 
+  const [instautoData, setInstautoData] = useState();
+
   const usersToFollowFollowersOfCleaned = useMemo(() => usersToFollowFollowersOf.map(user => user.replace(/^@/g, '')), [usersToFollowFollowersOf]);
 
   useEffect(() => configStore.set('skipPrivate', skipPrivate), [skipPrivate]);
   useEffect(() => configStore.set('usersToFollowFollowersOf', usersToFollowFollowersOf), [usersToFollowFollowersOf]);
 
-  const isUsersValid = usersToFollowFollowersOf.length >= 1;
+  const fewUsersToFollowFollowersOf = usersToFollowFollowersOf.length < 5;
 
+  // This could be improved in the future
+  const maxFollowsTotal = advancedSettings.maxFollowsPerDay;
 
   async function updateCookiesState() {
     setHaveCookies(await checkHaveCookies());
   }
 
+  async function tryInitInstautoDb() {
+    try {
+      await initInstautoDb();
+      setInstautoData(getInstautoData());
+    } catch (err) {
+      console.error('err');
+    }
+  }
+
   useEffect(() => {
+    tryInitInstautoDb();
+
     updateCookiesState();
   }, []);
 
@@ -191,10 +254,6 @@ const App = memo(() => {
   }
 
   async function onStartPress() {
-    if (!isUsersValid) {
-      Swal.fire('Please add at least 1 username to the list!');
-      return;
-    }
     if (running) {
       const result = await Swal.fire({
         title: 'Are you sure?',
@@ -207,6 +266,22 @@ const App = memo(() => {
       if (result.value) electron.remote.app.quit();
       return;
     }
+
+    if (usersToFollowFollowersOf.length < 1) {
+      await Swal.fire({ icon: 'error', text: 'Please add at least 1 username to the list!' });
+      return;
+    }
+
+    if (!haveCookies && (username.length < 1 || password.length < 1)) {
+      await Swal.fire({ icon: 'error', text: 'Please enter your username and password' });
+      return;
+    }
+
+    if (fewUsersToFollowFollowersOf) {
+      const { value } = await Swal.fire({ icon: 'warning', text: 'We recommended to provide at least 5 users', showCancelButton: true, confirmButtonText: 'Run anyway' });
+      if (!value) return;
+    }
+
 
     setLogs([]);
     setRunning(true);
@@ -229,27 +304,28 @@ const App = memo(() => {
     try {
       await initInstauto({
         ...advancedSettings,
-      
+
         excludeUsers: [],
-      
+
         dryRun,
-      
+
         username,
         password,
 
         logger,
       });
 
-      await runFollowUserFollowers({
+      await runBot({
         usernames: usersToFollowFollowersOfCleaned,
         ageInDays: advancedSettings.dontUnfollowUntilDaysElapsed,
-        maxFollowsPerUser: advancedSettings.maxFollowsPerUser,
         skipPrivate,
         runAtHour: advancedSettings.runAtHour,
+        maxLikesPerUser: advancedSettings.maxLikesPerUser,
+        maxFollowsTotal,
       });
     } catch (err) {
-      logger.error(err);
-      await Swal.fire({ icon: 'error', title: 'Failed to run', text: 'Check logs, then try to log out and log back in or restart the app.' });
+      logger.error('Failed to run', err);
+      await Swal.fire({ icon: 'error', title: 'Failed to run', text: 'Try the troubleshooting button' });
       await onLogoutClick();
     } finally {
       setRunning(false);
@@ -258,10 +334,24 @@ const App = memo(() => {
     }
   }
 
+  function onTroubleshootingClick() {
+    Swal.fire({
+      title: 'Troubleshooting',
+      html: `
+        <ul style="text-align: left">
+          <li>Check that all usernames are correct.</li>
+          <li>Check logs for any error</li>
+          <li>Try to log out and then log back in</li>
+          <li>Restart the app</li>
+        </ul>
+      `,
+    });
+  }
+
   return (
     <>
-      <div style={{ margin: 20 }}>
-        <div>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{ margin: 20, maxWidth: 800 }}>
           {running ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <Lottie
@@ -270,7 +360,7 @@ const App = memo(() => {
               />
 
               <div style={{ fontSize: 27 }}>Your bot is running</div>
-              <div style={{ margin: '20px 0' }}>Leave this application running on your computer and keep it connected to power and prevent it from sleeping and the bot will work for you while you are doing more useful things</div>
+              <div style={{ margin: '20px 0' }}>Leave this app running on your computer and keep it connected to power and prevent it from sleeping and the bot will work for you while you are doing more useful things</div>
 
               <LogView fontSize={10} logs={logs} />
             </div>
@@ -284,9 +374,12 @@ const App = memo(() => {
                   />
 
                   {haveCookies ? (
-                    <Button iconBefore="log-out" type="button" intent="danger" onClick={onLogoutClick}>Log out</Button>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <div style={{ marginBottom: 20 }}>Your bot is logged in and ready to go!</div>
+                      <Button iconBefore="log-out" type="button" intent="danger" onClick={onLogoutClick}>Log out</Button>
+                    </div>
                   ) : (
-                    <>
+                    <div>
                       <TextInputField
                         isInvalid={username.length < 1}
                         value={username}
@@ -303,18 +396,18 @@ const App = memo(() => {
                         onChange={e => setPassword(e.target.value)}
                         type="password"
                         label="Password"
+                        description="(We do not store your username/password)"
                       />
-                    </>
+                    </div>
                   )}
-
-                  <Button iconBefore="settings" type="button" onClick={() => setAdvancedVisible(true)}>Show advanced settings</Button>
                 </div>
 
                 <div style={{ width: '50%', margin: '10px 10px' }}>
                   <div style={{ margin: '20px 0' }}>
-                    <Label style={{ display: 'block' }}>List of usernames that we should follow the followers of. Can be celebrities etc, users with a lot of followers. SimpleInstaBot will go into each of these accounts and find their recent followers and follow up to {advancedSettings.maxFollowsPerUser} of these, in hope that they will follow back. Then after a {advancedSettings.dontUnfollowUntilDaysElapsed} days it will unfollow them again. The more users, the more diversity. <b>Press ENTER between each username</b></Label>
+                    <Label style={{ display: 'block' }}>List of accounts whose followers the bot should follow. Choose accounts with a lot of followers (e.g influencers above 100k). The bot will then visit each of these and follow their most recent followers, in hope that they will follow you back. <b>{advancedSettings.dontUnfollowUntilDaysElapsed} days</b> later, it will unfollow them. For best results, choose accounts from a niche market that you want to target.<br /><b>Press ENTER between each username</b></Label>
                     <TagInput
-                      inputProps={{ placeholder: "Influencers, celebrities, etc." }}
+                      inputProps={{ placeholder: 'Influencers, celebrities, etc.' }}
+                      style={{ border: fewUsersToFollowFollowersOf ? '1px solid orange' : undefined }}
                       values={usersToFollowFollowersOf}
                       onChange={setUsersToFollowFollowersOf}
                       separator={/[,\s]/}
@@ -322,46 +415,38 @@ const App = memo(() => {
                   </div>
 
                   <div style={{ margin: '20px 0' }}>
-                    <Label>Check this to skip following private accounts</Label>
                     <Checkbox
-                      label="Skip private"
-                      checked={skipPrivate}
-                      onChange={e => setSkipPrivate(e.target.checked)}
+                      label="Follow private accounts?"
+                      checked={!skipPrivate}
+                      onChange={e => setSkipPrivate(!e.target.checked)}
                     />
                   </div>
 
                   <div style={{ margin: '20px 0' }}>
-                    <Label>If checked, will not actually perform any actions (useful for testing)</Label>
                     <Checkbox
-                      label="Dry run"
-                      checked={dryRun}
-                      onChange={e => setDryRun(e.target.checked)}
+                      label="Like a few photos after following users?"
+                      checked={advancedSettings.maxLikesPerUser > 0}
+                      onChange={e => setAdvancedSetting('maxLikesPerUser', e.target.checked ? 2 : 0)}
                     />
                   </div>
                 </div>
               </div>
 
-              <div>
-                When your press the Start button the bot will start immediately, then repeat every day (24hr) at {advancedSettings.runAtHour}:00 until the program is stopped.<br />
-                Note: Be sure to run this on a normal home internet connection, or you will increase the risk being banned. Do not use a VPN.<br />
-                <b>If possible use same internet connection as you normally use your Instagram mobile app</b><br />
-              </div>
-              <div style={{ margin: '10px 0', fontSize: 12 }}>
-                I am not responsible for any consequences for you or your instagram account by using this bot.
+              <div style={{ maxWidth: 600, margin: 'auto', color: 'rgba(0,0,0,0.7)' }}>
+                When you press the <b>Start</b> button the bot will start immediately, then repeat every day at {advancedSettings.runAtHour}:00 until the app is stopped.<br />
+                To avoid temporary blocks, please run the bot on the same internet/WiFi as you normally use your Instagram app. <b>Do not use a VPN.</b><br />
               </div>
             </>
           )}
 
           <div style={{ margin: '20px 0', textAlign: 'center' }}>
             <Button iconBefore={running ? 'stop' : 'play'} height={40} type="button" intent={running ? 'danger' : 'success'} onClick={onStartPress}>{running ? 'Stop bot' : 'Start bot'}</Button>
+            <Button iconBefore="settings" type="button" height={40} onClick={() => setAdvancedVisible(true)}>Show advanced settings</Button>
             {logs.length > 0 && <Button iconBefore="list" height={40} type="button" onClick={() => setLogsVisible(true)}>Logs</Button>}
+            <Button iconBefore="issue" type="button" height={40} onClick={onTroubleshootingClick}>Troubleshooting</Button>
           </div>
 
-
-          <div>
-            <h3>Troubleshooting</h3>
-            If it's not working, make sure your instagram language is set to english. Also check that all usernames are correct.
-          </div>
+          {instautoData && !running && <StatisticsBanner data={instautoData} />}
 
           <div style={{ position: 'fixed', right: 0, bottom: 5, background: 'rgba(255,255,255,0.6)' }}>
             <Button appearance="minimal" onClick={() => electron.shell.openExternal('https://mifi.no/')}>More apps by mifi.no</Button>
@@ -371,14 +456,13 @@ const App = memo(() => {
             />
           </div>
         </div>
-
       </div>
 
-      <SideSheet isShown={advancedVisible} onCloseComplete={() => setAdvancedVisible(false)}>
+      <SideSheet containerProps={{ style: { maxWidth: '100%' } }} isShown={advancedVisible} onCloseComplete={() => setAdvancedVisible(false)}>
         <div style={{ margin: 20 }}>
           <h3>Advanced settings</h3>
 
-          <AdvancedSettings advancedSettings={advancedSettings} onChange={setAdvancedSettings} />
+          <AdvancedSettings dryRun={dryRun} setDryRun={setDryRun} advancedSettings={advancedSettings} onChange={setAdvancedSettings} />
 
           <Button iconBefore="tick" type="button" onClick={() => setAdvancedVisible(false)}>Save &amp; Close</Button>
         </div>

@@ -7,16 +7,17 @@ const store = new Store({
 
     maxFollowsPerHour: 20,
     maxFollowsPerDay: 150,
+    maxLikesPerDay: 50,
+    maxLikesPerUser: 2,
     followUserRatioMin: 0.2,
     followUserRatioMax: 4.0,
     followUserMaxFollowers: null,
     followUserMaxFollowing: null,
     followUserMinFollowers: null,
-    followUserMinFollowing: null,
+    followUserMinFollowing: 10,
     dontUnfollowUntilDaysElapsed: 5,
-    maxFollowsPerUser: 10,
     runAtHour: 10,
-  }
+  },
 });
 
 module.exports = store;
