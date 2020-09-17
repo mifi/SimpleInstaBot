@@ -48,6 +48,10 @@ I advise you to follow these guidelines:
 - Run the bot on the same internet connection (e.g. WiFi) as you normally use your phone with the Instagram mobile app. It will reduce the chance of being flagged
 - Use conservative parameters (max follows/unfollows per day 150 and max 20 per hour, maybe even start out lower, and work your way up)
 
+## Troubleshooting
+
+ - Follow button not found: switch your instagram account into English as stated in the [instauto](https://www.npmjs.com/package/instauto) troobleshooting page
+
 ## Credits
 
 Animations by:
