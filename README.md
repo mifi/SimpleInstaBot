@@ -68,6 +68,7 @@ This project is maintained by me alone. The project will always remain free and 
 [Paypal](https://paypal.me/mifino)
 
 ## See also
+- https://github.com/mifi/instauto - Programmatic Instagram bot API
 - https://instagrambot.github.io/
 - https://socialmanager.tools/
 - https://gramup.me/
