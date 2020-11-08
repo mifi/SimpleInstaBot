@@ -2,7 +2,7 @@
 
 Use a robot to attract more followers. Now as a simple desktop app!
 
-![Demo](https://github.com/mifi/SimpleInstaBot/raw/master/screenshot.jpg)
+[![Demo](https://img.youtube.com/vi/xkjOozYU3aA/0.jpg)](https://www.youtube.com/watch?v=xkjOozYU3aA)
 
 ## How does it work?
 
