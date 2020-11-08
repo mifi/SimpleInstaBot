@@ -22,7 +22,7 @@
     "execa": "^4.0.0",
     "framer-motion": "^1.7.0",
     "fs-extra": "^8.1.0",
-    "instauto": "^7.0.3",
+    "instauto": "^7.1.1",
     "lodash": "^4.17.19",
     "moment": "^2.24.0",
     "prop-types": "^15.7.2",
