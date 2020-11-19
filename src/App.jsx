@@ -2,6 +2,7 @@ import React, { memo, useState, useEffect, useRef, useMemo } from 'react';
 import { Button, TextInputField, SideSheet, TagInput, Checkbox, Badge, Label, Textarea } from 'evergreen-ui';
 import Swal from 'sweetalert2';
 import moment from 'moment';
+import isEqual from 'lodash/isEqual';
 
 import Lottie from 'react-lottie';
 
@@ -14,7 +15,7 @@ const electron = window.require('electron');
 
 const { powerSaveBlocker } = electron.remote.require('electron');
 const { initInstautoDb, initInstauto, runBot, cleanupInstauto, checkHaveCookies, deleteCookies, getInstautoData } = electron.remote.require('./electron');
-const configStore = electron.remote.require('./store');
+const { store: configStore, defaults: configDefaults } = electron.remote.require('./store');
 
 
 const StatisticsBanner = memo(({ data: { numFollowedLastDay, numTotalFollowedUsers, numUnfollowedLastDay, numTotalUnfollowedUsers, numLikedLastDay, numTotalLikedPhotos } }) => {
@@ -103,6 +104,8 @@ const AdvancedSettings = memo(({
     },
   };
 
+  const formatValue = (value) => (value != null ? String(value) : 'unset');
+
   return (
     <>
       <Lottie
@@ -110,12 +113,25 @@ const AdvancedSettings = memo(({
         style={{ width: 100, height: 100, margin: 0 }}
       />
 
-      {Object.entries(advancedSettings).map(([key, value]) => (
-        <div key={key} style={{ margin: '10px 0' }}>
-          <b>{key}</b> <Badge color={value != null ? 'green' : undefined}>{value != null ? String(value) : 'unset'}</Badge>
-          <div>{optsData[key].description}</div>
-        </div>
-      ))}
+      {Object.entries(advancedSettings).map(([key, value]) => {
+        const defaultValue = configDefaults[key];
+        const hasChanged = !isEqual(defaultValue, value);
+
+        return (
+          <div key={key} style={{ margin: '10px 0' }}>
+            <b>{key}</b>
+            &nbsp;
+            <Badge color={value != null ? 'green' : undefined}>{formatValue(value)}</Badge>
+            {hasChanged && (
+              <>
+                &nbsp;
+                <Badge>default {formatValue(defaultValue)}</Badge>
+              </>
+            )}
+            <div>{optsData[key].description}</div>
+          </div>
+        );
+      })}
 
       <Label
         htmlFor="textarea"
@@ -134,7 +150,7 @@ const AdvancedSettings = memo(({
 
       <div style={{ margin: '30px 0' }}>
         <Checkbox
-          label="Dry run - if checked, will not actually perform any actions (useful for testing)"
+          label="Dry run - If checked, the bot will not perform any real actions (useful for testing)"
           checked={dryRun}
           onChange={e => setDryRun(e.target.checked)}
         />
