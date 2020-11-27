@@ -231,6 +231,11 @@ const App = memo(() => {
   const [skipPrivate, setSkipPrivate] = useState(configStore.get('skipPrivate'));
   const [usersToFollowFollowersOf, setUsersToFollowFollowersOf] = useState(configStore.get('usersToFollowFollowersOf'));
 
+  function onUsersToFollowFollowersOfChange(newVal) {
+    // Some people try hashtags
+    setUsersToFollowFollowersOf(newVal.filter((v) => !v.startsWith('#')));
+  }
+
   const [logs, setLogs] = useState([]);
 
   const [instautoData, setInstautoData] = useState();
@@ -425,7 +430,7 @@ const App = memo(() => {
                       inputProps={{ placeholder: 'Influencers, celebrities, etc.' }}
                       style={{ border: fewUsersToFollowFollowersOf ? '1px solid orange' : undefined }}
                       values={usersToFollowFollowersOf}
-                      onChange={setUsersToFollowFollowersOf}
+                      onChange={onUsersToFollowFollowersOfChange}
                       separator={/[,\s]/}
                     />
                   </div>
