@@ -201,6 +201,7 @@ function createWindow() {
       // https://github.com/electron/electron/issues/5107
       webSecurity: !isDev,
     },
+    title: `SimpleInstaBot ${app.getVersion()}`,
   });
 
   mainWindow.loadURL(isDev ? 'http://localhost:3001' : `file://${path.join(__dirname, '../build/index.html')}`);
