@@ -165,7 +165,7 @@ async function runBot({
   for (;;) {
     try {
       // Leave room for some follows too
-      const unfollowLimit = Math.floor(maxFollowsTotal / 3);
+      const unfollowLimit = Math.floor(maxFollowsTotal * (2 / 3));
       const unfollowedCount = await instauto.unfollowOldFollowed({ ageInDays, limit: unfollowLimit });
 
       if (unfollowedCount > 0) await instauto.sleep(10 * 60 * 1000);
