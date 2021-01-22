@@ -8,6 +8,13 @@ Use a robot to attract more followers. Now as a simple desktop app!
 
 It runs as a desktop application on your computer and will every day follow up to 150 users (configurable). You choose a list of instagram users whose market you want to target. The bot navigates to each of these, finds the last people to have followed them and then follows each of them. Then after 5 days (also configurable), it will unfollow the users. Simple and effective.
 
+The bot will remember every user it has followed, so if you quit the app and open it later, it will still clean up by unfollowing users that it previously followed.
+
+You can find logs and data in your the "App Data" folder. See [userData](https://www.electronjs.org/docs/api/app#appgetpathname). For example on Mac OS:
+```
+Library/Application\ Support/SimpleInstaBot/followed.json
+```
+
 ## Features
 
 What makes it different from other bots?
