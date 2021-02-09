@@ -97,8 +97,18 @@
     "linux": {
       "icon": "icon-build/app-512.png",
       "target": [
-        "AppImage",
-        "tar.bz2"
+        {
+          "arch": "x64",
+          "target": "AppImage"
+        },
+        {
+          "arch": "x64",
+          "target": "tar.bz2"
+        },
+        {
+          "arch": ["armv7l"],
+          "target": "tar.bz2"
+        }
       ]
     }
   }
