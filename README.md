@@ -37,8 +37,9 @@ down on paid Instagram bot services and cloud and VPN IPs
 
 - [Mac OS X](https://github.com/mifi/SimpleInstaBot/releases/latest/download/SimpleInstaBot-mac.dmg)
 - [Windows](https://github.com/mifi/SimpleInstaBot/releases/latest/download/SimpleInstaBot-win.exe)
-- [Linux AppImage](https://github.com/mifi/SimpleInstaBot/releases/latest/download/SimpleInstaBot-linux.AppImage)
-- [Linux tar.tz](https://github.com/mifi/SimpleInstaBot/releases/latest/download/SimpleInstaBot-linux.tar.bz2)
+- [Linux (x64) AppImage](https://github.com/mifi/SimpleInstaBot/releases/latest/download/SimpleInstaBot-linux-x86_64.AppImage)
+- [Linux (x64) tar.tz](https://github.com/mifi/SimpleInstaBot/releases/latest/download/SimpleInstaBot-linux-x64.tar.bz2)
+- [Linux (armv7l) (Raspberry Pi) tar.tz](https://github.com/mifi/SimpleInstaBot/releases/latest/download/SimpleInstaBot-linux-armv7l.tar.bz2)
 
 NOTE: After installing you may need to bypass "Untrusted app" dialogs. This is because Microsoft requires a costly certificate to remove this dialog (I'm not going to pay for that.) Alternatively try to google `windows run untrusted app`.
 
