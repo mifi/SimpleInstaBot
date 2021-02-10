@@ -396,7 +396,7 @@ const App = memo(() => {
               <div style={{ fontSize: 27 }}>Your bot is running</div>
               <div style={{ margin: '20px 0' }}>
                 <p>Leave the app running on your computer and keep it connected to power and prevent it from sleeping and the bot will work for you while you are doing more useful things.</p>
-                <p>Please don&apos;t close/minimize the other window 🤖</p>
+                <p>Please don&apos;t close/minimize the other window <span role="img" aria-label="Robot">🤖</span></p>
               </div>
 
               <LogView fontSize={10} logs={logs} />

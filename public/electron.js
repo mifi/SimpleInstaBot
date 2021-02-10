@@ -142,7 +142,7 @@ function cleanupInstauto() {
 }
 
 async function runBot({
-  usernames, ageInDays, skipPrivate, runAtHour, maxLikesPerUser, maxFollowsTotal, instantStart
+  usernames, ageInDays, skipPrivate, runAtHour, maxLikesPerUser, maxFollowsTotal, instantStart,
 }) {
   assert(instauto);
 
