@@ -80,3 +80,11 @@ This project is maintained by me alone. The project will always remain free and 
 - https://instagrambot.github.io/
 - https://socialmanager.tools/
 - https://gramup.me/
+
+---
+
+Made with ❤️ in [🇳🇴](https://www.youtube.com/watch?v=uQIv8Vo9_Jc)
+
+[More apps by mifi.no](https://mifi.no/)
+
+Follow me on [GitHub](https://github.com/mifi/), [YouTube](https://www.youtube.com/channel/UC6XlvVH63g0H54HSJubURQA), [IG](https://www.instagram.com/mifi.no/), [Twitter](https://twitter.com/mifi_no) for more awesome content!
