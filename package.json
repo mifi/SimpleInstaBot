@@ -107,9 +107,7 @@
           "target": "tar.bz2"
         },
         {
-          "arch": [
-            "armv7l"
-          ],
+          "arch": "armv7l",
           "target": "tar.bz2"
         }
       ]
