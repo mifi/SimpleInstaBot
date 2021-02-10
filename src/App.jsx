@@ -262,16 +262,20 @@ const App = memo(() => {
     setHaveCookies(await checkHaveCookies());
   }
 
-  async function tryInitInstautoDb() {
-    try {
-      await initInstautoDb();
-      setInstautoData(getInstautoData());
-    } catch (err) {
-      console.error('err');
-    }
+  function refreshInstautoData() {
+    setInstautoData(getInstautoData());
   }
 
   useEffect(() => {
+    async function tryInitInstautoDb() {
+      try {
+        await initInstautoDb();
+        refreshInstautoData();
+      } catch (err) {
+        console.error('err');
+      }
+    }
+
     tryInitInstautoDb();
 
     updateCookiesState();
