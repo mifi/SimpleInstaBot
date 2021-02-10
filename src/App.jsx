@@ -45,7 +45,7 @@ const StatisticsBanner = memo(({ data: { numFollowedLastDay, numTotalFollowedUse
 });
 
 const AdvancedSettings = memo(({
-  advancedSettings, onChange, dryRun, setDryRun,
+  advancedSettings, onChange, dryRun, setDryRun, instantStart, setInstantStart,
 }) => {
   const [advancedSettingsTxt, setAdvancedSettingsTxt] = useState();
   const [valid, setValid] = useState(true);
@@ -154,6 +154,12 @@ const AdvancedSettings = memo(({
           checked={dryRun}
           onChange={e => setDryRun(e.target.checked)}
         />
+
+        <Checkbox
+          label="Start immediately - If unchecked, the bot will sleep until the hour 'runAtHour' when Start button is pressed"
+          checked={instantStart}
+          onChange={e => setInstantStart(e.target.checked)}
+        />
       </div>
     </>
   );
@@ -230,6 +236,8 @@ const App = memo(() => {
 
   const [skipPrivate, setSkipPrivate] = useState(configStore.get('skipPrivate'));
   const [usersToFollowFollowersOf, setUsersToFollowFollowersOf] = useState(configStore.get('usersToFollowFollowersOf'));
+
+  const [instantStart, setInstantStart] = useState(true);
 
   function onUsersToFollowFollowersOfChange(newVal) {
     // Some people try hashtags
@@ -343,6 +351,7 @@ const App = memo(() => {
         runAtHour: advancedSettings.runAtHour,
         maxLikesPerUser: advancedSettings.maxLikesPerUser,
         maxFollowsTotal,
+        instantStart,
       });
     } catch (err) {
       logger.error('Failed to run', err);
@@ -381,7 +390,10 @@ const App = memo(() => {
               />
 
               <div style={{ fontSize: 27 }}>Your bot is running</div>
-              <div style={{ margin: '20px 0' }}>Leave this app running on your computer and keep it connected to power and prevent it from sleeping and the bot will work for you while you are doing more useful things</div>
+              <div style={{ margin: '20px 0' }}>
+                <p>Leave the app running on your computer and keep it connected to power and prevent it from sleeping and the bot will work for you while you are doing more useful things.</p>
+                <p>Please don&apos;t close/minimize the other window 🤖</p>
+              </div>
 
               <LogView fontSize={10} logs={logs} />
             </div>
@@ -483,7 +495,7 @@ const App = memo(() => {
         <div style={{ margin: 20 }}>
           <h3>Advanced settings</h3>
 
-          <AdvancedSettings dryRun={dryRun} setDryRun={setDryRun} advancedSettings={advancedSettings} onChange={setAdvancedSettings} />
+          <AdvancedSettings dryRun={dryRun} setDryRun={setDryRun} advancedSettings={advancedSettings} onChange={setAdvancedSettings} instantStart={instantStart} setInstantStart={setInstantStart} />
 
           <Button iconBefore="tick" type="button" onClick={() => setAdvancedVisible(false)}>Save &amp; Close</Button>
         </div>

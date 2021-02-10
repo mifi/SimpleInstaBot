@@ -142,7 +142,7 @@ function cleanupInstauto() {
 }
 
 async function runBot({
-  usernames, ageInDays, skipPrivate, runAtHour, maxLikesPerUser, maxFollowsTotal,
+  usernames, ageInDays, skipPrivate, runAtHour, maxLikesPerUser, maxFollowsTotal, instantStart
 }) {
   assert(instauto);
 
@@ -157,10 +157,12 @@ async function runBot({
 
   async function sleepUntilNextDay() {
     const msUntilNextRun = getMsUntilNextRun();
-    logger.log(`Sleeping ${msUntilNextRun / (60 * 60 * 1000)} hours...`);
+    logger.log(`Sleeping ${msUntilNextRun / (60 * 60 * 1000)} hours (waiting until ${runAtHour}:00)...`);
     await new Promise(resolve => setTimeout(resolve, msUntilNextRun));
     logger.log('Done sleeping, running...');
   }
+
+  if (!instantStart) await sleepUntilNextDay();
 
   for (;;) {
     try {
