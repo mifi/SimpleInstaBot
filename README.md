@@ -60,6 +60,19 @@ I advise you to follow these guidelines:
 
  - Follow button not found: switch your instagram account into English as stated in the [instauto](https://www.npmjs.com/package/instauto) troobleshooting page
 
+## FAQ
+
+- Q: Can I run it on multiple accounts at the same time?
+- A: No, currently you would need multiple PC's or multiple VMs for that. See [#27](https://github.com/mifi/SimpleInstaBot/issues/27)
+- Q: Can I run it on multiple accounts (but not at the same time)?
+- A: Currently you have to delete or move the config files if you log out and log into a different account. See [#42](https://github.com/mifi/SimpleInstaBot/issues/42)
+
+## Donate 🙈
+
+This project is maintained by me alone. The project will always remain free and open source, but if it's useful for you, consider supporting me. :) It will give me extra motivation to improve it.
+
+[Paypal](https://paypal.me/mifino/usd) | [crypto](https://mifi.no/thanks)
+
 ## Credits
 
 Animations by:
@@ -68,19 +81,6 @@ Animations by:
 - https://lottiefiles.com/aanhamdani
 
 Icons made by [Freepik](https://www.flaticon.com/authors/freepik) from [www.flaticon.com](https://www.flaticon.com/)
-
-## Donate 🙈
-
-This project is maintained by me alone. The project will always remain free and open source, but if it's useful for you, consider supporting me. :) It will give me extra motivation to improve it.
-
-[Paypal](https://paypal.me/mifino/usd) | [crypto](https://mifi.no/thanks)
-
-## FAQ
-
-- Q: Can I run it on multiple accounts at the same time?
-- A: No, currently you would need multiple PC's or multiple VMs for that. See [#27](https://github.com/mifi/SimpleInstaBot/issues/27)
-- Q: Can I run it on multiple accounts (but not at the same time)?
-- A: Currently you have to delete or move the config files if you log out and log into a different account. See [#42](https://github.com/mifi/SimpleInstaBot/issues/42)
 
 ## See also
 - https://github.com/mifi/instauto - Programmatic Instagram bot API
