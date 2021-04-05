@@ -65,7 +65,7 @@ I advise you to follow these guidelines:
 - Q: Can I run it on multiple accounts at the same time?
 - A: No, currently you would need multiple PC's or multiple VMs for that. See [#27](https://github.com/mifi/SimpleInstaBot/issues/27)
 - Q: Can I run it on multiple accounts (but not at the same time)?
-- A: Currently you have to delete or move the config files if you log out and log into a different account. See [#42](https://github.com/mifi/SimpleInstaBot/issues/42)
+- A: Yes, just log out, and then log in to your other account instead. Followed/liked etc will be remembered.
 
 ## Donate 🙈
 
