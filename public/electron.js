@@ -6,10 +6,17 @@ const puppeteer = require('puppeteer-core');
 const { join } = require('path');
 const assert = require('assert');
 const fs = require('fs-extra');
+const filenamify = require('filenamify');
 
 const Instauto = require('instauto');
 const moment = require('moment');
 
+
+function getFilePath(rel) {
+  return join(app.getPath('userData'), rel);
+}
+
+const cookiesPath = getFilePath('cookies.json');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -28,36 +35,42 @@ async function initPieBrowser() {
 
 initPieBrowser().catch(console.error);
 
-function getFilePath(rel) {
-  return join(app.getPath('userData'), rel);
-}
-
-function getCookiesPath() {
-  return getFilePath('cookies.json');
-}
-
 async function checkHaveCookies() {
-  return fs.exists(getCookiesPath());
+  return fs.pathExists(cookiesPath);
 }
 
 async function deleteCookies() {
   try {
-    await fs.unlink(getCookiesPath());
+    await fs.unlink(cookiesPath);
   } catch (err) {
-    logger.warn('Unable to delete cookies', err);
+    logger.log('No cookies to delete', err);
   }
 }
 
-async function initInstautoDb() {
+async function initInstautoDb(usernameIn) {
+  const username = usernameIn && filenamify(usernameIn);
+  const followedDbPath = getFilePath(username ? `${username}-followed.json` : 'followed.json');
+  const unfollowedDbPath = getFilePath(username ? `${username}-unfollowed.json` : 'followed.json');
+  const likedPhotosDbPath = getFilePath(username ? `${username}-liked-photos.json` : 'followed.json');
+
+  // Migrate any old paths if we have new version (with username) now:
+  if (username) {
+    await fs.move(getFilePath('followed.json'), followedDbPath).catch(() => {});
+    await fs.move(getFilePath('unfollowed.json'), unfollowedDbPath).catch(() => {});
+    await fs.move(getFilePath('liked-photos.json'), likedPhotosDbPath).catch(() => {});
+  }
+
   instautoDb = await Instauto.JSONDB({
-    followedDbPath: getFilePath('followed.json'),
-    unfollowedDbPath: getFilePath('unfollowed.json'),
-    likedPhotosDbPath: getFilePath('liked-photos.json'),
+    followedDbPath,
+    unfollowedDbPath,
+    likedPhotosDbPath,
   });
 }
 
 function getInstautoData() {
   const dayMs = 24 * 60 * 60 * 1000;
+
+  if (!instautoDb) return undefined;
 
   return {
     numTotalFollowedUsers: instautoDb.getTotalFollowedUsers(),
@@ -106,7 +119,7 @@ async function initInstauto({
     // randomizeUserAgent: false,
     // userAgent: 'Mozilla/5.0 (Linux; Android 9; RMX1971) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.136 Mobile Safari/537.36',
 
-    cookiesPath: getCookiesPath(),
+    cookiesPath,
 
     username,
     password,
@@ -134,11 +147,14 @@ async function initInstauto({
 }
 
 function cleanupInstauto() {
-  instautoWindow.destroy();
+  if (instautoWindow) {
+    instautoWindow.destroy();
+    instautoWindow = undefined;
+  }
   // TODO deinit more?
-  // instautoDb = undefined;
+  instautoDb = undefined;
   instauto = undefined;
-  logger = undefined;
+  logger = console;
 }
 
 async function runBot({

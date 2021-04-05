@@ -2,6 +2,7 @@ const Store = require('electron-store');
 
 const defaults = {
   skipPrivate: true,
+  currentUsername: undefined,
   usersToFollowFollowersOf: ['@lostleblanc', '@samkolder', '@bomkanari'],
 
   maxFollowsPerHour: 20,

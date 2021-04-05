@@ -14,6 +14,10 @@
     "arrow-parens": 0,
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",
+    "import/no-extraneous-dependencies": ["error", {
+      "devDependencies": true,
+      "optionalDependencies": false
+    }],
     "jsx-a11y/control-has-associated-label": 0,
 
     "no-console": 0,

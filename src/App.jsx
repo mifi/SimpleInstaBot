@@ -1,10 +1,10 @@
-import React, { memo, useState, useEffect, useRef, useMemo } from 'react';
+import React, { memo, useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Button, TextInputField, SideSheet, TagInput, Checkbox, Badge, Label, Textarea } from 'evergreen-ui';
 import Swal from 'sweetalert2';
 import moment from 'moment';
 import isEqual from 'lodash/isEqual';
-
-import Lottie from 'react-lottie';
+import Lottie from 'react-lottie-player';
+import { FaRegSmileBeam } from 'react-icons/fa';
 
 import runningLottie from './14470-phone-running.json';
 import robotLottie from './10178-c-bot.json';
@@ -12,6 +12,7 @@ import robotDizzyLottie from './13680-robot-call.json';
 import loveLottie from './13682-heart.json';
 
 const electron = window.require('electron');
+const isDev = window.require('electron-is-dev');
 
 const { powerSaveBlocker } = electron.remote.require('electron');
 const { initInstautoDb, initInstauto, runBot, cleanupInstauto, checkHaveCookies, deleteCookies, getInstautoData } = electron.remote.require('./electron');
@@ -109,7 +110,9 @@ const AdvancedSettings = memo(({
   return (
     <>
       <Lottie
-        options={{ loop: true, autoplay: true, animationData: robotDizzyLottie }}
+        loop
+        play
+        animationData={robotDizzyLottie}
         style={{ width: 100, height: 100, margin: 0 }}
       />
 
@@ -237,12 +240,31 @@ const App = memo(() => {
   const [skipPrivate, setSkipPrivate] = useState(configStore.get('skipPrivate'));
   const [usersToFollowFollowersOf, setUsersToFollowFollowersOf] = useState(configStore.get('usersToFollowFollowersOf'));
 
+  const [currentUsername, setCurrentUsername] = useState(configStore.get('currentUsername'));
+  useEffect(() => (currentUsername ? configStore.set('currentUsername', currentUsername) : configStore.delete('currentUsername')), [currentUsername]);
+
   const [instantStart, setInstantStart] = useState(true);
 
   function onUsersToFollowFollowersOfChange(newVal) {
     // Some people try hashtags
     setUsersToFollowFollowersOf(newVal.filter((v) => !v.startsWith('#')));
   }
+
+  // Testing
+  // useEffect(() => isDev && setRunning(true), []);
+
+  const [shouldPlayAnimations, setSouldPlayAnimations] = useState(true);
+
+  useEffect(() => {
+    if (running) {
+      const t = setTimeout(() => {
+        setSouldPlayAnimations(false);
+      }, isDev ? 5000 : 60000);
+
+      return () => clearTimeout(t);
+    }
+    return undefined;
+  }, [running]);
 
   const [logs, setLogs] = useState([]);
 
@@ -262,28 +284,31 @@ const App = memo(() => {
     setHaveCookies(await checkHaveCookies());
   }
 
-  function refreshInstautoData() {
+  const refreshInstautoData = useCallback(() => {
     setInstautoData(getInstautoData());
-  }
+  }, []);
+
+  const isLoggedIn = !!(currentUsername && haveCookies);
 
   useEffect(() => {
-    async function tryInitInstautoDb() {
-      try {
-        await initInstautoDb();
-        refreshInstautoData();
-      } catch (err) {
-        console.error('err');
-      }
-    }
+    (async () => {
+      if (!isLoggedIn) return;
+      await initInstautoDb(currentUsername);
+      refreshInstautoData();
+    })().catch(console.error);
+  }, [currentUsername, isLoggedIn, refreshInstautoData]);
 
-    tryInitInstautoDb();
-
+  useEffect(() => {
     updateCookiesState();
   }, []);
 
   async function onLogoutClick() {
     await deleteCookies();
     await updateCookiesState();
+    setCurrentUsername();
+    cleanupInstauto();
+
+    refreshInstautoData();
   }
 
   async function onStartPress() {
@@ -305,7 +330,7 @@ const App = memo(() => {
       return;
     }
 
-    if (!haveCookies && (username.length < 1 || password.length < 1)) {
+    if (!isLoggedIn && (username.length < 1 || password.length < 1)) {
       await Swal.fire({ icon: 'error', text: 'Please enter your username and password' });
       return;
     }
@@ -335,6 +360,15 @@ const App = memo(() => {
     };
 
     try {
+      if (isLoggedIn) {
+        await initInstautoDb(currentUsername);
+      } else {
+        await deleteCookies(); // Maybe they had cookies but not yet any currentUsername (old version)
+        setCurrentUsername(username);
+        await initInstautoDb(username);
+      }
+      refreshInstautoData();
+
       await initInstauto({
         ...advancedSettings,
 
@@ -382,35 +416,53 @@ const App = memo(() => {
     });
   }
 
+  const onDonateClick = () => electron.shell.openExternal('https://mifi.no/thanks');
+
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <div style={{ margin: 20, maxWidth: 800 }}>
+        <div>
           {running ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: 500 }}>
               <Lottie
-                options={{ loop: true, autoplay: true, animationData: runningLottie }}
+                loop
+                play={shouldPlayAnimations}
+                animationData={runningLottie}
                 style={{ maxWidth: 200, width: '100%' }}
               />
 
-              <div style={{ fontSize: 27 }}>Your bot is running</div>
-              <div style={{ margin: '20px 0' }}>
+              <div style={{ fontSize: 27, marginBottom: 20 }}>Your bot is running</div>
+
+              <div>
                 <p>Leave the app running on your computer and keep it connected to power and prevent it from sleeping and the bot will work for you while you are doing more useful things.</p>
                 <p>Please don&apos;t close/minimize the other window <span role="img" aria-label="Robot">🤖</span></p>
+              </div>
+
+              <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center' }}>
+                <FaRegSmileBeam size={70} style={{ color: '#e9896a', marginRight: 15, cursor: 'pointer' }} role="button" onClick={onDonateClick} />
+                <div>
+                  Is SimpleInstaBot useful to you?<br />
+                  I built this for free for everyone to enjoy.
+                  <div role="button" tabIndex="0" style={{ cursor: 'pointer', color: 'rgba(0,0,0,0.6)', fontWeight: 'bold' }} onClick={onDonateClick}>Please consider supporting my continued work</div>
+                </div>
               </div>
 
               <LogView fontSize={10} logs={logs} />
             </div>
           ) : (
-            <>
+            <div style={{ margin: 20, maxWidth: 800 }}>
               <div style={{ display: 'flex' }}>
                 <div style={{ width: '50%', margin: '10px 10px' }}>
-                  <Lottie
-                    options={{ loop: true, autoplay: true, animationData: robotLottie }}
-                    style={{ width: 150, height: 150 }}
-                  />
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <Lottie
+                      loop
+                      play
+                      animationData={robotLottie}
+                      style={{ width: 150, height: 150 }}
+                    />
+                  </div>
 
-                  {haveCookies ? (
+                  {isLoggedIn ? (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                       <div style={{ marginBottom: 20 }}>Your bot is logged in and ready to go!</div>
                       <Button iconBefore="log-out" type="button" intent="danger" onClick={onLogoutClick}>Log out</Button>
@@ -433,7 +485,7 @@ const App = memo(() => {
                         onChange={e => setPassword(e.target.value)}
                         type="password"
                         label="Password"
-                        description="(We do not store your username/password)"
+                        description="We do not store your password"
                       />
                     </div>
                   )}
@@ -473,7 +525,7 @@ const App = memo(() => {
                 When you press the <b>Start</b> button the bot will start immediately, then repeat every day at {advancedSettings.runAtHour}:00 until the app is stopped.<br />
                 To avoid temporary blocks, please run the bot on the same internet/WiFi as you normally use your Instagram app. <b>Do not use a VPN.</b><br />
               </div>
-            </>
+            </div>
           )}
 
           <div style={{ margin: '20px 0', textAlign: 'center' }}>
@@ -485,11 +537,14 @@ const App = memo(() => {
 
           {instautoData && !running && <StatisticsBanner data={instautoData} />}
 
-          <div style={{ position: 'fixed', right: 0, bottom: 5, background: 'rgba(255,255,255,0.6)' }}>
+          <div style={{ position: 'fixed', right: 5, bottom: 5, background: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center' }}>
             <Button appearance="minimal" onClick={() => electron.shell.openExternal('https://mifi.no/')}>More apps by mifi.no</Button>
             <Lottie
-              options={{ loop: true, autoplay: true, animationData: loveLottie }}
-              style={{ width: 50, height: 50, display: 'inline-block', marginLeft: -10, marginTop: -40, marginBottom: -20 }}
+              loop
+              play={!running}
+              goTo={running ? 50 : undefined}
+              animationData={loveLottie}
+              style={{ width: 50, height: 50, margin: -10 }}
             />
           </div>
         </div>
