@@ -20,11 +20,12 @@ Library/Application\ Support/SimpleInstaBot/followed.json
 What makes it different from other bots?
 
 - Free and open source
+- No viruses or fishy business, guaranteed to not store your password! (See the code for yourself)
 - Simple, easy to use
 - Effective: Follow/unfollow is proven very effective. By only doing follow/unfollow, the bot avoids all those awkward situations where a bot comments "Awesome!" on a post depicting a tragic events.
 - Secure: Never stores your username an password
-- Safe: Runs on your own computer, to reduce the risk of being banned. Instagram is known to crack - Automatic rate limiting
-down on paid Instagram bot services and cloud and VPN IPs
+- Safe: Runs on your own computer, to reduce the risk of being banned. Instagram is known to crack down on paid Instagram bot services and cloud and VPN IPs
+- Automatic rate limiting
 - Uses a normal browser to mimic the behavior of a normal user (does not use private APIs easily detectable by Instagram)
 - Randomized timed behavior
 - Simulates human behavior of sleeping at night, and usage in the day time
