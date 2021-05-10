@@ -11196,6 +11196,11 @@ svgo@^1.0.0, svgo@^1.2.2:
     unquote "~1.1.1"
     util.promisify "~1.0.0"
 
+sweetalert2-react-content@^3.3.2:
+  version "3.3.2"
+  resolved "https://registry.yarnpkg.com/sweetalert2-react-content/-/sweetalert2-react-content-3.3.2.tgz#2ef1ce2bc1c2abef4a8a1a848ed120516c826c31"
+  integrity sha512-BZvKHOFia/jwrsuZze8vlsH7GHLeQda3O+v/dWhk3n9tr72URWS29yv03JM9mihlSamljIOka1yjpd+VmCvlSA==
+
 sweetalert2@^9.5.4:
   version "9.5.4"
   resolved "https://registry.yarnpkg.com/sweetalert2/-/sweetalert2-9.5.4.tgz#fcf9306a70ff9dbe2cb867b3bb7e871d854a2979"

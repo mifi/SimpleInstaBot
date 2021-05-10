@@ -22,18 +22,16 @@ const cookiesPath = getFilePath('cookies.json');
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
 
-let pieBrowser;
 let instautoDb;
 let instauto;
 let instautoWindow;
 let logger = console;
 
-async function initPieBrowser() {
-  // Must be called before electron is ready
-  pieBrowser = await pie.connect(app, puppeteer);
-}
+// Must be called before electron is ready
+// NOTE: It will listen to a TCP port. could be an issue
+const pieConnectPromise = pie.connect(app, puppeteer);
 
-initPieBrowser().catch(console.error);
+pieConnectPromise.catch(console.error);
 
 async function checkHaveCookies() {
   return fs.pathExists(cookiesPath);
@@ -110,8 +108,11 @@ async function initInstauto({
   const { session } = instautoWindow.webContents;
   await session.clearStorageData(); // we store cookies etc separately
 
-  const b = { // TODO improve API in instauto to accept page instead of browser?
-    newPage: async () => pie.getPage(pieBrowser, instautoWindow),
+  const browser = { // TODO improve API in instauto to accept page instead of browser?
+    newPage: async () => {
+      const pieBrowser = await pieConnectPromise;
+      return pie.getPage(pieBrowser, instautoWindow);
+    },
   };
 
   const options = {
@@ -142,7 +143,7 @@ async function initInstauto({
 
   mainWindow.focus();
 
-  instauto = await Instauto(instautoDb, b, options);
+  instauto = await Instauto(instautoDb, browser, options);
   logger = loggerArg;
 }
 

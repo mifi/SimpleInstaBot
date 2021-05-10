@@ -5,6 +5,7 @@ import moment from 'moment';
 import isEqual from 'lodash/isEqual';
 import Lottie from 'react-lottie-player';
 import { FaRegSmileBeam } from 'react-icons/fa';
+import withReactContent from 'sweetalert2-react-content'
 
 import runningLottie from './14470-phone-running.json';
 import robotLottie from './10178-c-bot.json';
@@ -17,6 +18,8 @@ const isDev = window.require('electron-is-dev');
 const { powerSaveBlocker } = electron.remote.require('electron');
 const { initInstautoDb, initInstauto, runBot, cleanupInstauto, checkHaveCookies, deleteCookies, getInstautoData } = electron.remote.require('./electron');
 const { store: configStore, defaults: configDefaults } = electron.remote.require('./store');
+
+const ReactSwal = withReactContent(Swal);
 
 
 const StatisticsBanner = memo(({ data: { numFollowedLastDay, numTotalFollowedUsers, numUnfollowedLastDay, numTotalUnfollowedUsers, numLikedLastDay, numTotalLikedPhotos } }) => {
@@ -393,7 +396,16 @@ const App = memo(() => {
       });
     } catch (err) {
       logger.error('Failed to run', err);
-      await Swal.fire({ icon: 'error', title: 'Failed to run', text: 'Try the troubleshooting button' });
+      await ReactSwal.fire({
+        icon: 'error',
+        title: 'Failed to run',
+        html: (
+          <div style={{ textAlign: 'left' }}>
+            Try the troubleshooting button. Error:
+            <div style={{ color: '#aa0000' }}>{err.message}</div>
+          </div>
+        ),
+      });
       await onLogoutClick();
     } finally {
       setRunning(false);
@@ -410,6 +422,7 @@ const App = memo(() => {
           <li>Check that all usernames are correct.</li>
           <li>Check logs for any error</li>
           <li>Try to log out and then log back in</li>
+          <li>Check that your firewall allows the app (listen to port)</li>
           <li>Restart the app</li>
         </ul>
       `,
