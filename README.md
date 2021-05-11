@@ -57,6 +57,26 @@ I advise you to follow these guidelines:
 - Run the bot on the same internet connection (e.g. WiFi) as you normally use your phone with the Instagram mobile app. It will reduce the chance of being flagged
 - Use conservative parameters (max follows/unfollows per day 150 and max 20 per hour, maybe even start out lower, and work your way up)
 
+## How to run on Raspberry PI
+
+```bash
+# SSH into your PI
+ssh pi@ip.of.pi
+
+# Download the Raspberry Pi binary
+wget https://github.com/mifi/SimpleInstaBot/releases/latest/download/SimpleInstaBot-linux-armv7l.tar.bz2
+
+# Extract it
+tar xvf SimpleInstaBot-linux-armv7l.tar.bz2
+cd SimpleInstaBot-linux-armv7l
+
+# run it
+DISPLAY=:0 ./simpleinstabot
+
+# or:
+DISPLAY=:0 ./simpleinstabot --no-sandbox
+```
+
 ## Troubleshooting
 
  - Follow button not found: switch your instagram account into English as stated in the [instauto](https://www.npmjs.com/package/instauto) troobleshooting page
