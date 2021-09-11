@@ -441,7 +441,7 @@ const App = memo(() => {
                 loop
                 play={shouldPlayAnimations}
                 animationData={runningLottie}
-                style={{ maxWidth: 200, width: '100%' }}
+                style={{ maxWidth: 150, width: '100%' }}
               />
 
               <div style={{ fontSize: 27, marginBottom: 20 }}>Your bot is running</div>
