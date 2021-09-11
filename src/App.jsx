@@ -5,7 +5,7 @@ import moment from 'moment';
 import isEqual from 'lodash/isEqual';
 import Lottie from 'react-lottie-player';
 import { FaRegSmileBeam } from 'react-icons/fa';
-import withReactContent from 'sweetalert2-react-content'
+import withReactContent from 'sweetalert2-react-content';
 
 import runningLottie from './14470-phone-running.json';
 import robotLottie from './10178-c-bot.json';
