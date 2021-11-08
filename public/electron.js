@@ -102,6 +102,7 @@ async function initInstauto({
     y: 0,
     webPreferences: {
       partition: 'instauto', // So that we have a separate session
+      backgroundThrottling: false,
     },
   });
 
@@ -219,6 +220,7 @@ function createWindow() {
       nodeIntegration: true,
       // https://github.com/electron/electron/issues/5107
       webSecurity: !isDev,
+      backgroundThrottling: false, // Attempt to fix https://github.com/mifi/SimpleInstaBot/issues/37
     },
     title: `SimpleInstaBot ${app.getVersion()}`,
   });

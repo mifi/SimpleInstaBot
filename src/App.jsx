@@ -347,7 +347,7 @@ const App = memo(() => {
     setLogs([]);
     setRunning(true);
 
-    const powerSaveBlockerId = powerSaveBlocker.start('prevent-app-suspension');
+    const powerSaveBlockerId = powerSaveBlocker.start('prevent-display-sleep');
 
     function log(level, ...args) {
       console[level](...args);
