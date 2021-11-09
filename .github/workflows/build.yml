@@ -1,6 +1,11 @@
 name: Build/release
 
-on: push
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
 
 jobs:
   release:
