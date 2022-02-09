@@ -109,6 +109,14 @@ Icons made by [Freepik](https://www.flaticon.com/authors/freepik) from [www.flat
 - https://socialmanager.tools/
 - https://gramup.me/
 
+## Releasing
+
+```
+npm version patch
+git push && git push --tags
+```
+Wait for github actions and go to https://github.com/mifi/SimpleInstaBot/releases
+
 ---
 
 Made with ❤️ in [🇳🇴](https://www.youtube.com/watch?v=uQIv8Vo9_Jc)
