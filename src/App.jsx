@@ -318,7 +318,7 @@ const App = memo(() => {
     if (running) {
       const result = await Swal.fire({
         title: 'Are you sure?',
-        text: 'This will terminate the bot and you will lose any logs',
+        text: 'This will terminate the bot and you will lose any log text. Note that the bot will still remember which users it has followed, and will unfollow them in the future.',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Stop the bot',
