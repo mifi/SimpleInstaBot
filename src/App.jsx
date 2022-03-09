@@ -1,5 +1,5 @@
 import React, { memo, useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { Button, TextInputField, SideSheet, TagInput, Checkbox, Badge, Label, Textarea } from 'evergreen-ui';
+import { Tooltip, IconButton, Button, TextInputField, SideSheet, TagInput, Checkbox, Badge, Label, Textarea } from 'evergreen-ui';
 import Swal from 'sweetalert2';
 import moment from 'moment';
 import isEqual from 'lodash/isEqual';
@@ -16,7 +16,7 @@ const electron = window.require('electron');
 const isDev = window.require('electron-is-dev');
 
 const { powerSaveBlocker } = electron.remote.require('electron');
-const { initInstautoDb, initInstauto, runBot, cleanupInstauto, checkHaveCookies, deleteCookies, getInstautoData } = electron.remote.require('./electron');
+const { initInstautoDb, initInstauto, runBotNormalMode, runBotUnfollowAllUnknown, runBotUnfollowNonMutualFollowers, cleanupInstauto, checkHaveCookies, deleteCookies, getInstautoData } = electron.remote.require('./electron');
 const { store: configStore, defaults: configDefaults } = electron.remote.require('./store');
 
 const ReactSwal = withReactContent(Swal);
@@ -314,7 +314,7 @@ const App = memo(() => {
     refreshInstautoData();
   }
 
-  async function onStartPress() {
+  async function startInstautoAction(instautoAction) {
     if (running) {
       const result = await Swal.fire({
         title: 'Are you sure?',
@@ -385,15 +385,7 @@ const App = memo(() => {
         logger,
       });
 
-      await runBot({
-        usernames: usersToFollowFollowersOfCleaned,
-        ageInDays: advancedSettings.dontUnfollowUntilDaysElapsed,
-        skipPrivate,
-        runAtHour: advancedSettings.runAtHour,
-        maxLikesPerUser: advancedSettings.maxLikesPerUser,
-        maxFollowsTotal,
-        instantStart,
-      });
+      await instautoAction();
     } catch (err) {
       logger.error('Failed to run', err);
       await ReactSwal.fire({
@@ -412,6 +404,28 @@ const App = memo(() => {
       cleanupInstauto();
       powerSaveBlocker.stop(powerSaveBlockerId);
     }
+  }
+
+  async function onStartPress() {
+    await startInstautoAction(async () => {
+      await runBotNormalMode({
+        usernames: usersToFollowFollowersOfCleaned,
+        ageInDays: advancedSettings.dontUnfollowUntilDaysElapsed,
+        skipPrivate,
+        runAtHour: advancedSettings.runAtHour,
+        maxLikesPerUser: advancedSettings.maxLikesPerUser,
+        maxFollowsTotal,
+        instantStart,
+      });
+    });
+  }
+
+  async function onUnfollowNonMutualFollowersPress() {
+    await startInstautoAction(async () => runBotUnfollowNonMutualFollowers());
+  }
+
+  async function onUnfollowAllUnknownPress() {
+    await startInstautoAction(async () => runBotUnfollowAllUnknown());
   }
 
   function onTroubleshootingClick() {
@@ -455,7 +469,8 @@ const App = memo(() => {
                 <FaRegSmileBeam size={70} style={{ color: '#e9896a', marginRight: 15, cursor: 'pointer' }} role="button" onClick={onDonateClick} />
                 <div>
                   Is SimpleInstaBot useful to you?<br />
-                  I built this for free for everyone to enjoy.
+                  I built this for free for everyone to enjoy.<br />
+                  No ads. No tracking. Just coding ❤️
                   <div role="button" tabIndex="0" style={{ cursor: 'pointer', color: 'rgba(0,0,0,0.6)', fontWeight: 'bold' }} onClick={onDonateClick}>Please consider supporting my continued work</div>
                 </div>
               </div>
@@ -463,7 +478,7 @@ const App = memo(() => {
               <LogView fontSize={10} logs={logs} />
             </div>
           ) : (
-            <div style={{ margin: 20, maxWidth: 800 }}>
+            <div style={{ maxWidth: 800 }}>
               <div style={{ display: 'flex' }}>
                 <div style={{ width: '50%', margin: '10px 10px' }}>
                   <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -504,9 +519,14 @@ const App = memo(() => {
                   )}
                 </div>
 
-                <div style={{ width: '50%', margin: '10px 10px' }}>
-                  <div style={{ margin: '20px 0' }}>
-                    <Label style={{ display: 'block' }}>List of accounts whose followers the bot should follow. Choose accounts with a lot of followers (e.g influencers above 100k). The bot will then visit each of these and follow their most recent followers, in hope that they will follow you back. <b>{advancedSettings.dontUnfollowUntilDaysElapsed} days</b> later, it will unfollow them. For best results, choose accounts from a niche market that you want to target.<br /><b>Press ENTER between each username</b></Label>
+                <div style={{ width: '50%', margin: '0px 10px' }}>
+                  <div style={{ marginBottom: 10, marginTop: 20 }}>
+                    <Label>
+                      List of accounts<br /><b>Press ENTER between each username</b>
+                    </Label>
+                    <Tooltip content={`List of accounts whose followers the bot should follow. Choose accounts with a lot of followers (e.g influencers above 100k). The bot will then visit each of these and follow their most recent followers, in hope that they will follow you back. ${advancedSettings.dontUnfollowUntilDaysElapsed} days later, it will unfollow them. For best results, choose accounts from a niche market that you want to target.`}>
+                      <IconButton icon="help" appearance="minimal" />
+                    </Tooltip>
                     <TagInput
                       inputProps={{ placeholder: 'Influencers, celebrities, etc.' }}
                       style={{ border: fewUsersToFollowFollowersOf ? '1px solid orange' : undefined }}
@@ -542,7 +562,25 @@ const App = memo(() => {
           )}
 
           <div style={{ margin: '20px 0', textAlign: 'center' }}>
-            <Button iconBefore={running ? 'stop' : 'play'} height={40} type="button" intent={running ? 'danger' : 'success'} onClick={onStartPress}>{running ? 'Stop bot' : 'Start bot'}</Button>
+            {running ? (
+              <Button iconBefore="stop" height={40} type="button" intent="danger" onClick={onStartPress}>Stop bot</Button>
+            ) : (
+              <>
+                <Tooltip content="Start the bot in the primary mode of operation (follow/unfollow/like etc)">
+                  <Button iconBefore="play" height={40} type="button" intent="success" onClick={onStartPress}>Start bot</Button>
+                </Tooltip>
+                <Tooltip content={`Special mode of operation: Unfollow all accounts that are not following you back (except accounts that were followed by bot in the last ${advancedSettings.dontUnfollowUntilDaysElapsed} days)`}>
+                  <Button iconBefore="play" height={40} type="button" onClick={onUnfollowNonMutualFollowersPress}>Unfollow non-mutual</Button>
+                </Tooltip>
+
+                <Tooltip content="Special mode of operation: Unfollow all unknown accounts (meaning unfollow all accounts that you are following, except any accounts that have been previously followed by the bot)">
+                  <Button iconBefore="play" height={40} type="button" onClick={onUnfollowAllUnknownPress}>Unfollow unknown</Button>
+                </Tooltip>
+              </>
+            )}
+          </div>
+
+          <div style={{ margin: '20px 0', textAlign: 'center' }}>
             <Button iconBefore="settings" type="button" height={40} onClick={() => setAdvancedVisible(true)}>Show advanced settings</Button>
             {logs.length > 0 && <Button iconBefore="list" height={40} type="button" onClick={() => setLogsVisible(true)}>Logs</Button>}
             <Button iconBefore="issue" type="button" height={40} onClick={onTroubleshootingClick}>Troubleshooting</Button>

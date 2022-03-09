@@ -159,7 +159,7 @@ function cleanupInstauto() {
   logger = console;
 }
 
-async function runBot({
+async function runBotNormalMode({
   usernames, ageInDays, skipPrivate, runAtHour, maxLikesPerUser, maxFollowsTotal, instantStart,
 }) {
   assert(instauto);
@@ -208,6 +208,16 @@ async function runBot({
 
     await sleepUntilNextDay();
   }
+}
+
+async function runBotUnfollowAllUnknown({ limit } = {}) {
+  assert(instauto);
+  await instauto.unfollowAllUnknown({ limit });
+}
+
+async function runBotUnfollowNonMutualFollowers({ limit } = {}) {
+  assert(instauto);
+  await instauto.unfollowNonMutualFollowers({ limit });
 }
 
 
@@ -269,7 +279,9 @@ module.exports = {
   initInstauto,
   initInstautoDb,
   getInstautoData,
-  runBot,
+  runBotNormalMode,
+  runBotUnfollowAllUnknown,
+  runBotUnfollowNonMutualFollowers,
   cleanupInstauto,
   checkHaveCookies,
   deleteCookies,
