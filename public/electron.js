@@ -211,13 +211,19 @@ async function runBotNormalMode({
 }
 
 async function runBotUnfollowAllUnknown({ limit } = {}) {
-  assert(instauto);
   await instauto.unfollowAllUnknown({ limit });
 }
 
 async function runBotUnfollowNonMutualFollowers({ limit } = {}) {
-  assert(instauto);
   await instauto.unfollowNonMutualFollowers({ limit });
+}
+
+async function runBotUnfollowOldFollowed({ ageInDays, limit } = {}) {
+  await instauto.unfollowOldFollowed({ ageInDays, limit });
+}
+
+async function runBotUnfollowUserList({ usersToUnfollow, limit } = {}) {
+  await instauto.safelyUnfollowUserList(usersToUnfollow, limit);
 }
 
 
@@ -282,6 +288,8 @@ module.exports = {
   runBotNormalMode,
   runBotUnfollowAllUnknown,
   runBotUnfollowNonMutualFollowers,
+  runBotUnfollowOldFollowed,
+  runBotUnfollowUserList,
   cleanupInstauto,
   checkHaveCookies,
   deleteCookies,

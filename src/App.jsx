@@ -1,5 +1,5 @@
-import React, { memo, useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { Tooltip, IconButton, Button, TextInputField, SideSheet, TagInput, Checkbox, Badge, Label, Textarea } from 'evergreen-ui';
+import React, { memo, useState, useEffect, useRef, useCallback } from 'react';
+import { Dialog, Tooltip, IconButton, Button, TextInputField, SideSheet, TagInput, Checkbox, Badge, Label, Textarea } from 'evergreen-ui';
 import Swal from 'sweetalert2';
 import moment from 'moment';
 import isEqual from 'lodash/isEqual';
@@ -16,10 +16,12 @@ const electron = window.require('electron');
 const isDev = window.require('electron-is-dev');
 
 const { powerSaveBlocker } = electron.remote.require('electron');
-const { initInstautoDb, initInstauto, runBotNormalMode, runBotUnfollowAllUnknown, runBotUnfollowNonMutualFollowers, cleanupInstauto, checkHaveCookies, deleteCookies, getInstautoData } = electron.remote.require('./electron');
+const { initInstautoDb, initInstauto, runBotNormalMode, runBotUnfollowAllUnknown, runBotUnfollowNonMutualFollowers, runBotUnfollowOldFollowed, runBotUnfollowUserList, cleanupInstauto, checkHaveCookies, deleteCookies, getInstautoData } = electron.remote.require('./electron');
 const { store: configStore, defaults: configDefaults } = electron.remote.require('./store');
 
 const ReactSwal = withReactContent(Swal);
+
+const cleanupAccounts = (accounts) => accounts.map(user => user.replace(/^@/g, ''));
 
 
 const StatisticsBanner = memo(({ data: { numFollowedLastDay, numTotalFollowedUsers, numUnfollowedLastDay, numTotalUnfollowedUsers, numLikedLastDay, numTotalLikedPhotos } }) => {
@@ -199,6 +201,43 @@ const LogView = memo(({ logs, style, fontSize } = {}) => {
   );
 });
 
+const AccountsList = memo(({ hasWarning, accounts, setAccounts, label, placeholder, tooltip }) => {
+  function onChange(newVal) {
+    // Some people try hashtags
+    setAccounts(newVal.filter((v) => !v.startsWith('#')));
+  }
+
+  return (
+    <>
+      <Label>
+        {label}<br /><b>Press ENTER between each username</b>
+      </Label>
+      {tooltip && (
+        <Tooltip content={tooltip}>
+          <IconButton icon="help" appearance="minimal" />
+        </Tooltip>
+      )}
+      <TagInput
+        inputProps={{ placeholder }}
+        style={{ border: hasWarning ? '1px solid orange' : undefined }}
+        values={accounts}
+        onChange={onChange}
+        separator={/[,\s]/}
+      />
+    </>
+  );
+});
+
+const AccountsListDialog = ({ isShown, onCloseComplete, onConfirm }) => {
+  const [accounts, setAccounts] = useState([]);
+
+  return (
+    <Dialog confirmLabel="Unfollow accounts" isShown={isShown} onCloseComplete={onCloseComplete} onConfirm={() => onConfirm(accounts)}>
+      <AccountsList accounts={accounts} setAccounts={setAccounts} placeholder="@account1 @account2" />
+    </Dialog>
+  );
+};
+
 const App = memo(() => {
   const [advancedSettings, setAdvancedSettings] = useState({
     maxFollowsPerDay: configStore.get('maxFollowsPerDay'),
@@ -248,15 +287,12 @@ const App = memo(() => {
 
   const [instantStart, setInstantStart] = useState(true);
 
-  function onUsersToFollowFollowersOfChange(newVal) {
-    // Some people try hashtags
-    setUsersToFollowFollowersOf(newVal.filter((v) => !v.startsWith('#')));
-  }
-
   // Testing
   // useEffect(() => isDev && setRunning(true), []);
 
   const [shouldPlayAnimations, setSouldPlayAnimations] = useState(true);
+
+  const [unfollowUserListDialogShown, setUnfollowUserListDialogShown] = useState(false);
 
   useEffect(() => {
     if (running) {
@@ -272,8 +308,6 @@ const App = memo(() => {
   const [logs, setLogs] = useState([]);
 
   const [instautoData, setInstautoData] = useState();
-
-  const usersToFollowFollowersOfCleaned = useMemo(() => usersToFollowFollowersOf.map(user => user.replace(/^@/g, '')), [usersToFollowFollowersOf]);
 
   useEffect(() => configStore.set('skipPrivate', skipPrivate), [skipPrivate]);
   useEffect(() => configStore.set('usersToFollowFollowersOf', usersToFollowFollowersOf), [usersToFollowFollowersOf]);
@@ -409,7 +443,7 @@ const App = memo(() => {
   async function onStartPress() {
     await startInstautoAction(async () => {
       await runBotNormalMode({
-        usernames: usersToFollowFollowersOfCleaned,
+        usernames: cleanupAccounts(usersToFollowFollowersOf),
         ageInDays: advancedSettings.dontUnfollowUntilDaysElapsed,
         skipPrivate,
         runAtHour: advancedSettings.runAtHour,
@@ -426,6 +460,17 @@ const App = memo(() => {
 
   async function onUnfollowAllUnknownPress() {
     await startInstautoAction(async () => runBotUnfollowAllUnknown());
+  }
+
+  async function onUnfollowOldFollowedPress() {
+    await startInstautoAction(async () => runBotUnfollowOldFollowed({ ageInDays: advancedSettings.dontUnfollowUntilDaysElapsed }));
+  }
+
+  async function onUnfollowUserList(accounts) {
+    const accountsCleaned = cleanupAccounts(accounts);
+    if (accountsCleaned.length === 0) return;
+    setUnfollowUserListDialogShown(false);
+    await startInstautoAction(async () => runBotUnfollowUserList({ usersToUnfollow: accounts }));
   }
 
   function onTroubleshootingClick() {
@@ -521,19 +566,7 @@ const App = memo(() => {
 
                 <div style={{ width: '50%', margin: '0px 10px' }}>
                   <div style={{ marginBottom: 10, marginTop: 20 }}>
-                    <Label>
-                      List of accounts<br /><b>Press ENTER between each username</b>
-                    </Label>
-                    <Tooltip content={`List of accounts whose followers the bot should follow. Choose accounts with a lot of followers (e.g influencers above 100k). The bot will then visit each of these and follow their most recent followers, in hope that they will follow you back. ${advancedSettings.dontUnfollowUntilDaysElapsed} days later, it will unfollow them. For best results, choose accounts from a niche market that you want to target.`}>
-                      <IconButton icon="help" appearance="minimal" />
-                    </Tooltip>
-                    <TagInput
-                      inputProps={{ placeholder: 'Influencers, celebrities, etc.' }}
-                      style={{ border: fewUsersToFollowFollowersOf ? '1px solid orange' : undefined }}
-                      values={usersToFollowFollowersOf}
-                      onChange={onUsersToFollowFollowersOfChange}
-                      separator={/[,\s]/}
-                    />
+                    <AccountsList accounts={usersToFollowFollowersOf} setAccounts={setUsersToFollowFollowersOf} hasWarning={fewUsersToFollowFollowersOf} label="List of accounts followers to follow" placeholder="Influencers, celebrities, etc." tooltip={`List of accounts whose followers the bot should follow. Choose accounts with a lot of followers (e.g influencers above 100k). The bot will then visit each of these and follow their most recent followers, in hope that they will follow you back. ${advancedSettings.dontUnfollowUntilDaysElapsed} days later, it will unfollow them. For best results, choose accounts from a niche market that you want to target.`} />
                   </div>
 
                   <div style={{ margin: '20px 0' }}>
@@ -569,21 +602,27 @@ const App = memo(() => {
                 <Tooltip content="Start the bot in the primary mode of operation (follow/unfollow/like etc)">
                   <Button iconBefore="play" height={40} type="button" intent="success" onClick={onStartPress}>Start bot</Button>
                 </Tooltip>
-                <Tooltip content={`Special mode of operation: Unfollow all accounts that are not following you back (except accounts that were followed by bot in the last ${advancedSettings.dontUnfollowUntilDaysElapsed} days)`}>
-                  <Button iconBefore="play" height={40} type="button" onClick={onUnfollowNonMutualFollowersPress}>Unfollow non-mutual</Button>
+                <br />
+                <Tooltip content={`Special mode of operation: Unfollow all accounts that were followed by bot more than ${advancedSettings.dontUnfollowUntilDaysElapsed} days ago`}>
+                  <Button iconBefore="play" height={30} type="button" onClick={onUnfollowOldFollowedPress}>Unfollow only</Button>
                 </Tooltip>
-
+                <Tooltip content={`Special mode of operation: Unfollow all accounts that are not following you back (except accounts that were followed by bot in the last ${advancedSettings.dontUnfollowUntilDaysElapsed} days)`}>
+                  <Button iconBefore="play" height={30} type="button" onClick={onUnfollowNonMutualFollowersPress}>Unfollow non-mutual</Button>
+                </Tooltip>
                 <Tooltip content="Special mode of operation: Unfollow all unknown accounts (meaning unfollow all accounts that you are following, except any accounts that have been previously followed by the bot)">
-                  <Button iconBefore="play" height={40} type="button" onClick={onUnfollowAllUnknownPress}>Unfollow unknown</Button>
+                  <Button iconBefore="play" height={30} type="button" onClick={onUnfollowAllUnknownPress}>Unfollow unknown</Button>
+                </Tooltip>
+                <Tooltip content="Special mode of operation: Unfollow a comma separated list of accounts that you specify">
+                  <Button iconBefore="play" height={30} type="button" onClick={() => setUnfollowUserListDialogShown(true)}>Unfollow list...</Button>
                 </Tooltip>
               </>
             )}
           </div>
 
           <div style={{ margin: '20px 0', textAlign: 'center' }}>
-            <Button iconBefore="settings" type="button" height={40} onClick={() => setAdvancedVisible(true)}>Show advanced settings</Button>
-            {logs.length > 0 && <Button iconBefore="list" height={40} type="button" onClick={() => setLogsVisible(true)}>Logs</Button>}
-            <Button iconBefore="issue" type="button" height={40} onClick={onTroubleshootingClick}>Troubleshooting</Button>
+            <Button iconBefore="settings" type="button" onClick={() => setAdvancedVisible(true)}>Show advanced settings</Button>
+            {logs.length > 0 && <Button iconBefore="list" type="button" onClick={() => setLogsVisible(true)}>Logs</Button>}
+            <Button iconBefore="issue" type="button" onClick={onTroubleshootingClick}>Troubleshooting</Button>
           </div>
 
           {instautoData && !running && <StatisticsBanner data={instautoData} />}
@@ -618,6 +657,8 @@ const App = memo(() => {
           <LogView logs={logs} fontSize={13} style={{ height: '100%' }} />
         </div>
       </SideSheet>
+
+      <AccountsListDialog isShown={unfollowUserListDialogShown} onCloseComplete={() => setUnfollowUserListDialogShown(false)} onConfirm={onUnfollowUserList} />
     </>
   );
 });
