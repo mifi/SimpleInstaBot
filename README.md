@@ -31,8 +31,8 @@ What makes it different from other bots?
 - Simulates human behavior of sleeping at night, and usage in the day time
 - Change browser signature to avoid being identified
 - Passes bot tests: https://intoli.com/blog/not-possible-to-block-chrome-headless/chrome-headless-test.html and https://arh.antoinevastel.com/bots/areyouheadless
-- Built on [instauto](https://github.com/mifi/instauto) which has been proven to work for over 2 years
 - Runs on all major desktop platforms
+- Multiple modes of operation: Unfollow only, Unfollow non-mutual followers, Unfollow unknown followed accounts, Unfollow user specified list of accounts.
 
 ## Download
 
@@ -56,6 +56,10 @@ I advise you to follow these guidelines:
 
 - Run the bot on the same internet connection (e.g. WiFi) as you normally use your phone with the Instagram mobile app. It will reduce the chance of being flagged
 - Use conservative parameters (max follows/unfollows per day 150 and max 20 per hour, maybe even start out lower, and work your way up)
+
+## API / programmatic bot
+
+SimpleInstaBot is built on [instauto](https://github.com/mifi/instauto) - you can instead use that if you want to program your own headless bot.
 
 ## How to run on Raspberry PI
 
