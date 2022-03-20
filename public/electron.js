@@ -226,6 +226,11 @@ async function runBotUnfollowUserList({ usersToUnfollow, limit } = {}) {
   await instauto.safelyUnfollowUserList(usersToUnfollow, limit);
 }
 
+// for easier development testing
+async function runTestCode() {
+  // await instauto.unfollowNonMutualFollowers({ limit: 1 });
+}
+
 
 function createWindow() {
   // Create the browser window.
@@ -290,6 +295,7 @@ module.exports = {
   runBotUnfollowNonMutualFollowers,
   runBotUnfollowOldFollowed,
   runBotUnfollowUserList,
+  runTestCode,
   cleanupInstauto,
   checkHaveCookies,
   deleteCookies,

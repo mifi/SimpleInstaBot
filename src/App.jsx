@@ -16,7 +16,7 @@ const electron = window.require('electron');
 const isDev = window.require('electron-is-dev');
 
 const { powerSaveBlocker } = electron.remote.require('electron');
-const { initInstautoDb, initInstauto, runBotNormalMode, runBotUnfollowAllUnknown, runBotUnfollowNonMutualFollowers, runBotUnfollowOldFollowed, runBotUnfollowUserList, cleanupInstauto, checkHaveCookies, deleteCookies, getInstautoData } = electron.remote.require('./electron');
+const { initInstautoDb, initInstauto, runBotNormalMode, runBotUnfollowAllUnknown, runBotUnfollowNonMutualFollowers, runBotUnfollowOldFollowed, runBotUnfollowUserList, cleanupInstauto, checkHaveCookies, deleteCookies, getInstautoData, runTestCode } = electron.remote.require('./electron');
 const { store: configStore, defaults: configDefaults } = electron.remote.require('./store');
 
 const ReactSwal = withReactContent(Swal);
@@ -272,7 +272,7 @@ const App = memo(() => {
   useEffect(() => configStore.set('runAtHour', advancedSettings.runAtHour), [advancedSettings.runAtHour]);
 
   const [haveCookies, setHaveCookies] = useState(false);
-  const [dryRun, setDryRun] = useState(false);
+  const [dryRun, setDryRun] = useState(isDev);
   const [running, setRunning] = useState(false);
   const [advancedVisible, setAdvancedVisible] = useState(false);
   const [logsVisible, setLogsVisible] = useState(false);
@@ -432,7 +432,7 @@ const App = memo(() => {
           </div>
         ),
       });
-      await onLogoutClick();
+      if (!isDev) await onLogoutClick();
     } finally {
       setRunning(false);
       cleanupInstauto();
@@ -471,6 +471,10 @@ const App = memo(() => {
     if (accountsCleaned.length === 0) return;
     setUnfollowUserListDialogShown(false);
     await startInstautoAction(async () => runBotUnfollowUserList({ usersToUnfollow: accounts }));
+  }
+
+  async function onRunTestCode() {
+    await startInstautoAction(async () => runTestCode());
   }
 
   function onTroubleshootingClick() {
@@ -615,6 +619,9 @@ const App = memo(() => {
                 <Tooltip content="Special mode of operation: Unfollow a comma separated list of accounts that you specify">
                   <Button iconBefore="play" height={30} type="button" onClick={() => setUnfollowUserListDialogShown(true)}>Unfollow list...</Button>
                 </Tooltip>
+                {isDev && (
+                  <Button iconBefore="play" height={30} type="button" onClick={() => onRunTestCode()}>Run test code</Button>
+                )}
               </>
             )}
           </div>
