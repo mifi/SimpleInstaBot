@@ -228,7 +228,7 @@ async function runBotUnfollowUserList({ usersToUnfollow, limit } = {}) {
 
 // for easier development testing
 async function runTestCode() {
-  // await instauto.unfollowNonMutualFollowers({ limit: 1 });
+  // console.log(await instauto.doesUserFollowMe('mifi.no'));
 }
 
 
