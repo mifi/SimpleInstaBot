@@ -8,6 +8,7 @@ const defaults = {
   maxFollowsPerHour: 20,
   maxFollowsPerDay: 150,
   maxLikesPerDay: 50,
+  enableFollowUnfollow: true,
   maxLikesPerUser: 2,
   followUserRatioMin: 0.2,
   followUserRatioMax: 4.0,

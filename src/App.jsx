@@ -16,7 +16,7 @@ const electron = window.require('electron');
 const isDev = window.require('electron-is-dev');
 
 const { powerSaveBlocker } = electron.remote.require('electron');
-const { initInstautoDb, initInstauto, runBotNormalMode, runBotUnfollowAllUnknown, runBotUnfollowNonMutualFollowers, runBotUnfollowOldFollowed, runBotUnfollowUserList, cleanupInstauto, checkHaveCookies, deleteCookies, getInstautoData, runTestCode } = electron.remote.require('./electron');
+const { initInstautoDb, initInstauto, runBotNormalMode, runBotUnfollowAllUnknown, runBotUnfollowNonMutualFollowers, runBotUnfollowOldFollowed, runBotUnfollowUserList, runBotFollowUserList, cleanupInstauto, checkHaveCookies, deleteCookies, getInstautoData, runTestCode } = electron.remote.require('./electron');
 const { store: configStore, defaults: configDefaults } = electron.remote.require('./store');
 
 const ReactSwal = withReactContent(Swal);
@@ -101,6 +101,9 @@ const AdvancedSettings = memo(({
     },
     maxLikesPerUser: {
       description: 'Like up to this number of photos on each user\'s profile. Set to 0 to deactivate liking photos',
+    },
+    enableFollowUnfollow: {
+      description: 'Enable follow/unfollow users? (can be disabled if you only want to like photos)',
     },
     maxLikesPerDay: {
       description: `Limit total photo likes per 24 hours. ${tooHighWarning}`,
@@ -228,11 +231,11 @@ const AccountsList = memo(({ hasWarning, accounts, setAccounts, label, placehold
   );
 });
 
-const AccountsListDialog = ({ isShown, onCloseComplete, onConfirm }) => {
+const AccountsListDialog = ({ isShown, onCloseComplete, onConfirm, label }) => {
   const [accounts, setAccounts] = useState([]);
 
   return (
-    <Dialog confirmLabel="Unfollow accounts" isShown={isShown} onCloseComplete={onCloseComplete} onConfirm={() => onConfirm(accounts)}>
+    <Dialog confirmLabel={label} isShown={isShown} onCloseComplete={onCloseComplete} onConfirm={() => onConfirm(accounts)}>
       <AccountsList accounts={accounts} setAccounts={setAccounts} placeholder="@account1 @account2" />
     </Dialog>
   );
@@ -244,6 +247,7 @@ const App = memo(() => {
     maxFollowsPerHour: configStore.get('maxFollowsPerHour'),
     maxLikesPerDay: configStore.get('maxLikesPerDay'),
     maxLikesPerUser: configStore.get('maxLikesPerUser'),
+    enableFollowUnfollow: configStore.get('enableFollowUnfollow'),
     followUserRatioMin: configStore.get('followUserRatioMin'),
     followUserRatioMax: configStore.get('followUserRatioMax'),
     followUserMaxFollowers: configStore.get('followUserMaxFollowers'),
@@ -262,6 +266,7 @@ const App = memo(() => {
   useEffect(() => configStore.set('maxFollowsPerHour', advancedSettings.maxFollowsPerHour), [advancedSettings.maxFollowsPerHour]);
   useEffect(() => configStore.set('maxLikesPerDay', advancedSettings.maxLikesPerDay), [advancedSettings.maxLikesPerDay]);
   useEffect(() => configStore.set('maxLikesPerUser', advancedSettings.maxLikesPerUser), [advancedSettings.maxLikesPerUser]);
+  useEffect(() => configStore.set('enableFollowUnfollow', advancedSettings.enableFollowUnfollow), [advancedSettings.enableFollowUnfollow]);
   useEffect(() => configStore.set('followUserRatioMin', advancedSettings.followUserRatioMin), [advancedSettings.followUserRatioMin]);
   useEffect(() => configStore.set('followUserRatioMax', advancedSettings.followUserRatioMax), [advancedSettings.followUserRatioMax]);
   useEffect(() => configStore.set('followUserMaxFollowers', advancedSettings.followUserMaxFollowers), [advancedSettings.followUserMaxFollowers]);
@@ -293,6 +298,7 @@ const App = memo(() => {
   const [shouldPlayAnimations, setSouldPlayAnimations] = useState(true);
 
   const [unfollowUserListDialogShown, setUnfollowUserListDialogShown] = useState(false);
+  const [followUserListDialogShown, setFollowUserListDialogShown] = useState(false);
 
   useEffect(() => {
     if (running) {
@@ -313,9 +319,6 @@ const App = memo(() => {
   useEffect(() => configStore.set('usersToFollowFollowersOf', usersToFollowFollowersOf), [usersToFollowFollowersOf]);
 
   const fewUsersToFollowFollowersOf = usersToFollowFollowersOf.length < 5;
-
-  // This could be improved in the future
-  const maxFollowsTotal = advancedSettings.maxFollowsPerDay;
 
   async function updateCookiesState() {
     setHaveCookies(await checkHaveCookies());
@@ -447,8 +450,9 @@ const App = memo(() => {
         ageInDays: advancedSettings.dontUnfollowUntilDaysElapsed,
         skipPrivate,
         runAtHour: advancedSettings.runAtHour,
+        enableFollowUnfollow: advancedSettings.enableFollowUnfollow,
         maxLikesPerUser: advancedSettings.maxLikesPerUser,
-        maxFollowsTotal,
+        maxFollowsTotal: advancedSettings.maxFollowsPerDay, // This could be improved in the future
         instantStart,
       });
     });
@@ -470,7 +474,14 @@ const App = memo(() => {
     const accountsCleaned = cleanupAccounts(accounts);
     if (accountsCleaned.length === 0) return;
     setUnfollowUserListDialogShown(false);
-    await startInstautoAction(async () => runBotUnfollowUserList({ usersToUnfollow: accounts }));
+    await startInstautoAction(async () => runBotUnfollowUserList({ usersToUnfollow: accountsCleaned }));
+  }
+
+  async function onFollowUserList(accounts) {
+    const accountsCleaned = cleanupAccounts(accounts);
+    if (accountsCleaned.length === 0) return;
+    setFollowUserListDialogShown(false);
+    await startInstautoAction(async () => runBotFollowUserList({ users: accountsCleaned, skipPrivate }));
   }
 
   async function onRunTestCode() {
@@ -608,19 +619,22 @@ const App = memo(() => {
                 </Tooltip>
                 <br />
                 <Tooltip content={`Special mode of operation: Unfollow all accounts that were followed by bot more than ${advancedSettings.dontUnfollowUntilDaysElapsed} days ago`}>
-                  <Button iconBefore="play" height={30} type="button" onClick={onUnfollowOldFollowedPress}>Unfollow only</Button>
+                  <Button height={30} type="button" onClick={onUnfollowOldFollowedPress}>Unfollow only</Button>
                 </Tooltip>
                 <Tooltip content={`Special mode of operation: Unfollow all accounts that are not following you back (except accounts that were followed by bot in the last ${advancedSettings.dontUnfollowUntilDaysElapsed} days)`}>
-                  <Button iconBefore="play" height={30} type="button" onClick={onUnfollowNonMutualFollowersPress}>Unfollow non-mutual</Button>
+                  <Button height={30} type="button" onClick={onUnfollowNonMutualFollowersPress}>Unfollow non-mutual</Button>
                 </Tooltip>
                 <Tooltip content="Special mode of operation: Unfollow all unknown accounts (meaning unfollow all accounts that you are following, except any accounts that have been previously followed by the bot)">
-                  <Button iconBefore="play" height={30} type="button" onClick={onUnfollowAllUnknownPress}>Unfollow unknown</Button>
+                  <Button height={30} type="button" onClick={onUnfollowAllUnknownPress}>Unfollow unknown</Button>
                 </Tooltip>
                 <Tooltip content="Special mode of operation: Unfollow a comma separated list of accounts that you specify">
-                  <Button iconBefore="play" height={30} type="button" onClick={() => setUnfollowUserListDialogShown(true)}>Unfollow list...</Button>
+                  <Button height={30} type="button" onClick={() => setUnfollowUserListDialogShown(true)}>Unfollow list...</Button>
+                </Tooltip>
+                <Tooltip content="Special mode of operation: Follow a comma separated list of accounts that you specify">
+                  <Button height={30} type="button" onClick={() => setFollowUserListDialogShown(true)}>Follow list...</Button>
                 </Tooltip>
                 {isDev && (
-                  <Button iconBefore="play" height={30} type="button" onClick={() => onRunTestCode()}>Run test code</Button>
+                  <Button height={30} type="button" onClick={() => onRunTestCode()}>Run test code</Button>
                 )}
               </>
             )}
@@ -665,7 +679,8 @@ const App = memo(() => {
         </div>
       </SideSheet>
 
-      <AccountsListDialog isShown={unfollowUserListDialogShown} onCloseComplete={() => setUnfollowUserListDialogShown(false)} onConfirm={onUnfollowUserList} />
+      <AccountsListDialog label="Unfollow accounts" isShown={unfollowUserListDialogShown} onCloseComplete={() => setUnfollowUserListDialogShown(false)} onConfirm={onUnfollowUserList} />
+      <AccountsListDialog label="Follow accounts" isShown={followUserListDialogShown} onCloseComplete={() => setFollowUserListDialogShown(false)} onConfirm={onFollowUserList} />
     </>
   );
 });

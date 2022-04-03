@@ -160,7 +160,7 @@ function cleanupInstauto() {
 }
 
 async function runBotNormalMode({
-  usernames, ageInDays, skipPrivate, runAtHour, maxLikesPerUser, maxFollowsTotal, instantStart,
+  usernames, ageInDays, skipPrivate, runAtHour, maxLikesPerUser, maxFollowsTotal, instantStart, enableFollowUnfollow,
 }) {
   assert(instauto);
 
@@ -186,16 +186,20 @@ async function runBotNormalMode({
     try {
       // Leave room for some follows too
       const unfollowLimit = Math.floor(maxFollowsTotal * (2 / 3));
-      const unfollowedCount = await instauto.unfollowOldFollowed({ ageInDays, limit: unfollowLimit });
+      let unfollowedCount = 0;
+      if (enableFollowUnfollow) {
+        unfollowedCount = await instauto.unfollowOldFollowed({ ageInDays, limit: unfollowLimit });
+        if (unfollowedCount > 0) await instauto.sleep(10 * 60 * 1000);
+      }
 
-      if (unfollowedCount > 0) await instauto.sleep(10 * 60 * 1000);
       const likingEnabled = maxLikesPerUser != null && maxLikesPerUser >= 1;
 
       await instauto.followUsersFollowers({
         usersToFollowFollowersOf: usernames,
-        maxFollowsTotal: maxFollowsTotal - unfollowedCount,
+        maxFollowsTotal: Math.max(0, maxFollowsTotal - unfollowedCount),
         skipPrivate,
         enableLikeImages: likingEnabled,
+        enableFollow: enableFollowUnfollow,
         likeImagesMax: likingEnabled ? maxLikesPerUser : undefined,
       });
 
@@ -224,6 +228,10 @@ async function runBotUnfollowOldFollowed({ ageInDays, limit } = {}) {
 
 async function runBotUnfollowUserList({ usersToUnfollow, limit } = {}) {
   await instauto.safelyUnfollowUserList(usersToUnfollow, limit);
+}
+
+async function runBotFollowUserList({ users, limit, skipPrivate } = {}) {
+  await instauto.safelyFollowUserList({ users, limit, skipPrivate });
 }
 
 // for easier development testing
@@ -295,6 +303,7 @@ module.exports = {
   runBotUnfollowNonMutualFollowers,
   runBotUnfollowOldFollowed,
   runBotUnfollowUserList,
+  runBotFollowUserList,
   runTestCode,
   cleanupInstauto,
   checkHaveCookies,
