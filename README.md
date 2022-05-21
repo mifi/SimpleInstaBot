@@ -6,11 +6,11 @@ Use a robot to attract more followers. Now as a simple desktop app!
 
 ## How does it work?
 
-It runs as a desktop application on your computer and will every day follow up to 150 users (configurable). You choose a list of instagram users whose market you want to target. The bot navigates to each of these, finds the last people to have followed them and then follows each of them. Then after 5 days (also configurable), it will unfollow the users. Simple and effective.
+It runs as a desktop application on your computer and will every day follow up to 150 users (configurable). You choose a list of Instagram users whose market you want to target. The bot navigates to each of these, finds the last people to have followed them and then follows each of them. Then after 5 days (also configurable), it will unfollow the users. Simple and effective.
 
 The bot will remember every user it has followed, so if you quit the app and open it later, it will still clean up by unfollowing users that it previously followed.
 
-You can find logs and data in your the "App Data" folder. See [userData](https://www.electronjs.org/docs/api/app#appgetpathname). For example on Mac OS:
+You can find logs and data in your "App Data" folder. See [userData](https://www.electronjs.org/docs/api/app#appgetpathname). For example on Mac OS:
 ```
 Library/Application\ Support/SimpleInstaBot/followed.json
 ```
@@ -23,7 +23,7 @@ What makes it different from other bots?
 - No viruses or fishy business, guaranteed to not store your password! (See the code for yourself)
 - Simple, easy to use
 - Effective: Follow/unfollow is proven very effective. By only doing follow/unfollow, the bot avoids all those awkward situations where a bot comments "Awesome!" on a post depicting a tragic events.
-- Secure: Never stores your username an password
+- Secure: Never stores your username or password
 - Safe: Runs on your own computer, to reduce the risk of being banned. Instagram is known to crack down on paid Instagram bot services and cloud and VPN IPs
 - Automatic rate limiting
 - Uses a normal browser to mimic the behavior of a normal user (does not use private APIs easily detectable by Instagram)
@@ -42,7 +42,7 @@ What makes it different from other bots?
 - [Linux (x64) tar.tz](https://github.com/mifi/SimpleInstaBot/releases/latest/download/SimpleInstaBot-linux-x64.tar.bz2)
 - [Linux (armv7l) (Raspberry Pi) tar.tz](https://github.com/mifi/SimpleInstaBot/releases/latest/download/SimpleInstaBot-linux-armv7l.tar.bz2)
 
-NOTE: After installing you may need to bypass "Untrusted app" dialogs. This is because Microsoft requires a costly certificate to remove this dialog (I'm not going to pay for that.) Alternatively try to google `windows run untrusted app`.
+NOTE: After installing you may need to bypass "Untrusted app" dialogs. This is because Microsoft requires a costly certificate to remove this dialog (I'm not going to pay for that.) Alternatively, try to Google `windows run untrusted app`.
 
 ## A word of warning
 
@@ -55,7 +55,7 @@ Many people are getting `Action Blocked` message these days with this bot as wel
 I advise you to follow these guidelines:
 
 - Run the bot on the same internet connection (e.g. WiFi) as you normally use your phone with the Instagram mobile app. It will reduce the chance of being flagged
-- Use conservative parameters (max follows/unfollows per day 150 and max 20 per hour, maybe even start out lower, and work your way up)
+- Use conservative parameters (max follows/unfollows per day 150 and max 20 per hour, maybe even start lower, and work your way up)
 
 ## API / programmatic bot
 
@@ -83,7 +83,7 @@ DISPLAY=:0 ./simpleinstabot --no-sandbox
 
 ## Troubleshooting
 
- - Follow button not found: switch your instagram account into English as stated in the [instauto](https://www.npmjs.com/package/instauto) troobleshooting page
+ - Follow button not found: switch your Instagram account into English as stated in the [instauto](https://www.npmjs.com/package/instauto) troubleshooting page
 
 ## FAQ
 
