@@ -6147,10 +6147,10 @@ inquirer@^7.0.0:
     strip-ansi "^5.1.0"
     through "^2.3.6"
 
-instauto@^9.1.7:
-  version "9.1.7"
-  resolved "https://registry.yarnpkg.com/instauto/-/instauto-9.1.7.tgz#21bc0143ca44e473ebeeb978ac12e0799802866b"
-  integrity sha512-ViMU3u9JrFVU/9nmWBADNJlyHDslgJkRQx+WxB4+AbdIwj3svRAFo+wz254LTl56tx3k/dKGmopEYFfcfL+V8A==
+instauto@^9.1.8:
+  version "9.1.8"
+  resolved "https://registry.yarnpkg.com/instauto/-/instauto-9.1.8.tgz#7d68ab702872c138548bf60997958e1e156ad882"
+  integrity sha512-r113/0qKXLDRIdGNr66TZ+R0zYUK8EnOUnE35S7hMIvwCBgjWRGULo9a7C+7pPebpm4OJA85aMNyr2CT0lj0yA==
   dependencies:
     fs-extra "^5.0.0"
     lodash "^4.17.10"
