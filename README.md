@@ -4,6 +4,8 @@ Use a robot to attract more followers. Now as a simple desktop app!
 
 [![Demo](https://img.youtube.com/vi/xkjOozYU3aA/0.jpg)](https://www.youtube.com/watch?v=xkjOozYU3aA)
 
+[![Discord](https://img.shields.io/discord/986052713425027072)](https://discord.com/channels/986052713425027072) [![PayPal](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/mifino/usd)
+
 ## How does it work?
 
 It runs as a desktop application on your computer and will every day follow up to 150 users (configurable). You choose a list of Instagram users whose market you want to target. The bot navigates to each of these, finds the last people to have followed them and then follows each of them. Then after 5 days (also configurable), it will unfollow the users. Simple and effective.
