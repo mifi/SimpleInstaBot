@@ -4,7 +4,7 @@ Use a robot to attract more followers. Now as a simple desktop app!
 
 [![Demo](https://img.youtube.com/vi/xkjOozYU3aA/0.jpg)](https://www.youtube.com/watch?v=xkjOozYU3aA)
 
-[![Discord](https://img.shields.io/discord/986052713425027072)](https://discord.com/channels/986052713425027072) [![PayPal](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/mifino/usd)
+[![Discord](https://img.shields.io/discord/986052713425027072)](https://discord.gg/Rh3KT9zyhj) [![PayPal](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/mifino/usd)
 
 ## How does it work?
 
