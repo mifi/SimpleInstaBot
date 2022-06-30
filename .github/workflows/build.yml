@@ -1,9 +1,6 @@
 name: Build/release
 
 on:
-  push:
-    tags:
-      - 'v*'
   workflow_dispatch:
 
 
@@ -17,12 +14,12 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
 
       - name: Install Node.js, NPM and Yarn
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
-          node-version: 10
+          node-version: 16
 
       - name: Prepare for app notarization
         if: startsWith(matrix.os, 'macos')

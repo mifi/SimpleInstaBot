@@ -11,6 +11,9 @@ const filenamify = require('filenamify');
 const Instauto = require('instauto');
 const moment = require('moment');
 
+// eslint-disable-next-line import/no-unresolved
+const gitCommitId = require('./gitCommitId.json');
+
 
 function getFilePath(rel) {
   return join(app.getPath('userData'), rel);
@@ -251,7 +254,7 @@ function createWindow() {
       webSecurity: !isDev,
       backgroundThrottling: false, // Attempt to fix https://github.com/mifi/SimpleInstaBot/issues/37
     },
-    title: `SimpleInstaBot ${app.getVersion()}`,
+    title: `SimpleInstaBot version ${gitCommitId}`,
   });
 
   mainWindow.loadURL(isDev ? 'http://localhost:3001' : `file://${path.join(__dirname, '../build/index.html')}`);

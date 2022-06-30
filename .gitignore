@@ -11,6 +11,7 @@
 # production
 /build
 /dist
+/public/gitCommitId.json
 
 # misc
 .DS_Store
