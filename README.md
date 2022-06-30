@@ -118,8 +118,7 @@ Icons made by [Freepik](https://www.flaticon.com/authors/freepik) from [www.flat
 ## Releasing
 
 ```
-npm version patch
-git push && git push --tags
+npm version patch && git push && git push --tags
 ```
 Wait for github actions and check https://github.com/mifi/SimpleInstaBot/releases
 
