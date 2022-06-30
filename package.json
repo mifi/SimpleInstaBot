@@ -115,6 +115,12 @@
           "target": "tar.bz2"
         }
       ]
-    }
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "releaseType": "release"
+      }
+    ]
   }
 }
