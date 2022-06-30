@@ -38,11 +38,9 @@
   },
   "scripts": {
     "start:frontend": "BROWSER=none PORT=3001 react-scripts start",
-    "start:electron": "npm run collect-git-commit && wait-on http://localhost:3001 && electron .",
+    "start:electron": "wait-on http://localhost:3001 && electron .",
     "start": "concurrently -k \"npm run start:frontend\" \"npm run start:electron\"",
     "icon-gen": "mkdir -p icon-build && svg2png src/icon.svg -o ./icon-build/app-512.png -w 512 -h 512",
-    "collect-git-commit": "node collectGitCommit.mjs",
-    "prebuild": "npm run collect-git-commit",
     "build": "yarn icon-gen && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
