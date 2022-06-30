@@ -120,7 +120,7 @@ Icons made by [Freepik](https://www.flaticon.com/authors/freepik) from [www.flat
 ```
 npm version patch && git push && git push --tags
 ```
-Wait for github actions and check https://github.com/mifi/SimpleInstaBot/releases
+Wait for github actions and go to https://github.com/mifi/SimpleInstaBot/releases
 
 ---
 
