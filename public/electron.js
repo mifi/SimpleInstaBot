@@ -10,12 +10,13 @@ const filenamify = require('filenamify');
 
 const Instauto = require('instauto');
 const moment = require('moment');
-
-
+let args=require('args-parser')(process.argv);
+let folder=args.folder?args.folder:"account"; //default folder
+const Path2=app.getPath('desktop')+'\\instabot\\'+folder; //get folder from desktop 
 function getFilePath(rel) {
-  return join(app.getPath('userData'), rel);
+  return join(Path2, rel);
 }
-
+app.setPath('userData',Path2+"\\browser_data");//store session data to browser_data folder
 const cookiesPath = getFilePath('cookies.json');
 
 // Keep a global reference of the window object, if you don't, the window will
