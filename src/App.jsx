@@ -4,7 +4,6 @@ import Swal from 'sweetalert2';
 import moment from 'moment';
 import isEqual from 'lodash/isEqual';
 import Lottie from 'react-lottie-player';
-import { FaRegSmileBeam } from 'react-icons/fa';
 import withReactContent from 'sweetalert2-react-content';
 
 import runningLottie from './14470-phone-running.json';
@@ -522,14 +521,10 @@ const App = memo(() => {
                 <p>Please don&apos;t close/minimize the other window <span role="img" aria-label="Robot">🤖</span></p>
               </div>
 
-              <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center' }}>
-                <FaRegSmileBeam size={70} style={{ color: '#e9896a', marginRight: 15, cursor: 'pointer' }} role="button" onClick={onDonateClick} />
-                <div>
-                  Is SimpleInstaBot useful to you?<br />
-                  I built this for free for everyone to enjoy.<br />
-                  No ads. No tracking. Just coding ❤️
-                  <div role="button" tabIndex="0" style={{ cursor: 'pointer', color: 'rgba(0,0,0,0.6)', fontWeight: 'bold' }} onClick={onDonateClick}>Please consider supporting my continued work</div>
-                </div>
+              <div style={{ marginBottom: 20 }}>
+                <b>No ads. No tracking. Just open source love.</b><br />
+                I built this for free for everyone to enjoy, but it needs constant updates to make sure it works whenever Instagram changes something.<br />
+                <div role="button" tabIndex="0" style={{ cursor: 'pointer', color: 'rgba(0,0,0,0.6)', fontWeight: 'bold' }} onClick={onDonateClick}>❤️ Consider supporting my work</div>
               </div>
 
               <LogView fontSize={10} logs={logs} />
