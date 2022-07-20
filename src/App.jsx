@@ -1,5 +1,5 @@
 import React, { memo, useState, useEffect, useRef, useCallback } from 'react';
-import { Dialog, Tooltip, IconButton, Button, TextInputField, SideSheet, TagInput, Checkbox, Badge, Label, Textarea } from 'evergreen-ui';
+import { Dialog, Tooltip, IconButton, HelpIcon, Button, TextInputField, SideSheet, TagInput, Checkbox, Badge, Label, Textarea } from 'evergreen-ui';
 import Swal from 'sweetalert2';
 import moment from 'moment';
 import isEqual from 'lodash/isEqual';
@@ -232,7 +232,7 @@ const AccountsList = memo(({ hasWarning, accounts, setAccounts, label, placehold
       </Label>
       {tooltip && (
         <Tooltip content={tooltip}>
-          <IconButton icon="help" appearance="minimal" />
+          <IconButton icon={HelpIcon} appearance="minimal" />
         </Tooltip>
       )}
       <TagInput
