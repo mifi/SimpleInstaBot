@@ -7,17 +7,12 @@ const { join } = require('path');
 const assert = require('assert');
 const fs = require('fs-extra');
 const filenamify = require('filenamify');
+const yargsParser = require('yargs-parser');
 
 const Instauto = require('instauto');
 const moment = require('moment');
 const electronRemote = require('@electron/remote/main'); // todo migrate away from this
 
-
-function getFilePath(rel) {
-  return join(app.getPath('userData'), rel);
-}
-
-const cookiesPath = getFilePath('cookies.json');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -40,6 +35,31 @@ const pieConnectPromise = (async () => {
 pieConnectPromise.catch(console.error);
 
 electronRemote.initialize();
+
+function parseCliArgs() {
+  const ignoreFirstArgs = isDev ? 2 : 1;
+  // production: First arg is the app executable
+  // dev: First 2 args are electron and the electron.js
+  const argsWithoutAppName = process.argv.length > ignoreFirstArgs ? process.argv.slice(ignoreFirstArgs) : [];
+
+  return yargsParser(argsWithoutAppName);
+}
+
+const args = parseCliArgs();
+console.log('CLI arguments', args);
+const { root: customRootPath } = args;
+
+if (customRootPath) {
+  console.log('Using custom root', customRootPath);
+  // must happen before 'ready' event
+  app.setPath('userData', join(customRootPath, 'electron'));
+}
+
+function getFilePath(rel) {
+  return join(customRootPath || app.getPath('userData'), rel);
+}
+
+const cookiesPath = getFilePath('cookies.json');
 
 async function checkHaveCookies() {
   return fs.pathExists(cookiesPath);
@@ -250,7 +270,6 @@ async function runBotFollowUserList({ users, limit, skipPrivate } = {}) {
 async function runTestCode() {
   // console.log(await instauto.doesUserFollowMe('mifi.no'));
 }
-
 
 function createWindow() {
   // Create the browser window.

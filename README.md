@@ -59,6 +59,15 @@ I advise you to follow these guidelines:
 - Run the bot on the same internet connection (e.g. WiFi) as you normally use your phone with the Instagram mobile app. It will reduce the chance of being flagged
 - Use conservative parameters (max follows/unfollows per day 150 and max 20 per hour, maybe even start lower, and work your way up)
 
+## Multiple accounts
+
+To run the bot on multiple accounts at the same time, run it with the command line argument `--root` to specify a unique path for each instance:
+
+```
+/path/to/SimpleInstaBot --root ~/Desktop/account1
+/path/to/SimpleInstaBot --root ~/Desktop/account2
+```
+
 ## API / programmatic bot
 
 SimpleInstaBot is built on [instauto](https://github.com/mifi/instauto) - you can instead use that if you want to program your own headless bot.
@@ -89,8 +98,6 @@ DISPLAY=:0 ./simpleinstabot --no-sandbox
 
 ## FAQ
 
-- Q: Can I run it on multiple accounts at the same time?
-- A: No, currently you would need multiple PC's or multiple VMs for that. See [#27](https://github.com/mifi/SimpleInstaBot/issues/27)
 - Q: Can I run it on multiple accounts (but not at the same time)?
 - A: Yes, just log out, and then log in to your other account instead. Followed/liked etc will be remembered.
 

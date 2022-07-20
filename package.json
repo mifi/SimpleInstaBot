@@ -25,7 +25,8 @@
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "puppeteer-core": "^15.4.0",
-    "puppeteer-in-electron": "^3.0.5"
+    "puppeteer-in-electron": "^3.0.5",
+    "yargs-parser": "^21.0.1"
   },
   "scripts": {
     "start:frontend": "BROWSER=none PORT=3001 react-scripts start",
