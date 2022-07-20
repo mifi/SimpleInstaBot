@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron'); // eslint-disable-line import/no-extraneous-dependencies
+const { app, BrowserWindow, powerSaveBlocker } = require('electron'); // eslint-disable-line import/no-extraneous-dependencies
 const isDev = require('electron-is-dev');
 const path = require('path');
 const pie = require('puppeteer-in-electron');
@@ -10,6 +10,7 @@ const filenamify = require('filenamify');
 
 const Instauto = require('instauto');
 const moment = require('moment');
+const electronRemote = require('@electron/remote/main'); // todo migrate away from this
 
 
 function getFilePath(rel) {
@@ -27,6 +28,8 @@ let instauto;
 let instautoWindow;
 let logger = console;
 
+let powerSaveBlockerId;
+
 // Must be called before electron is ready
 // NOTE: It will listen to a TCP port. could be an issue
 const pieConnectPromise = (async () => {
@@ -35,6 +38,8 @@ const pieConnectPromise = (async () => {
 })();
 
 pieConnectPromise.catch(console.error);
+
+electronRemote.initialize();
 
 async function checkHaveCookies() {
   return fs.pathExists(cookiesPath);
@@ -149,9 +154,13 @@ async function initInstauto({
 
   instauto = await Instauto(instautoDb, browser, options);
   logger = loggerArg;
+
+  powerSaveBlockerId = powerSaveBlocker.start('prevent-display-sleep');
 }
 
 function cleanupInstauto() {
+  if (powerSaveBlockerId != null) powerSaveBlocker.stop(powerSaveBlockerId);
+
   if (instautoWindow) {
     instautoWindow.destroy();
     instautoWindow = undefined;
@@ -249,7 +258,9 @@ function createWindow() {
     width: 800,
     height: 700,
     webPreferences: {
-      nodeIntegration: true,
+      contextIsolation: false, // todo
+      nodeIntegration: true, // todo
+      preload: path.join(__dirname, 'preload.js'),
       // https://github.com/electron/electron/issues/5107
       webSecurity: !isDev,
       backgroundThrottling: false, // Attempt to fix https://github.com/mifi/SimpleInstaBot/issues/37
@@ -257,7 +268,13 @@ function createWindow() {
     title: `SimpleInstaBot ${app.getVersion()}`,
   });
 
-  mainWindow.loadURL(isDev ? 'http://localhost:3001' : `file://${path.join(__dirname, '../build/index.html')}`);
+  electronRemote.enable(mainWindow.webContents);
+
+  const url = new URL(isDev ? 'http://localhost:3001' : `file://${path.join(__dirname, '../build/index.html')}`);
+
+  url.searchParams.append('data', JSON.stringify({ isDev }));
+
+  mainWindow.loadURL(url.toString());
 
   if (isDev) {
     const { default: installExtension, REACT_DEVELOPER_TOOLS } = require('electron-devtools-installer'); // eslint-disable-line global-require,import/no-extraneous-dependencies

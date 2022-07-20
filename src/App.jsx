@@ -12,12 +12,12 @@ import robotLottie from './10178-c-bot.json';
 import robotDizzyLottie from './13680-robot-call.json';
 import loveLottie from './13682-heart.json';
 
-const electron = window.require('electron');
-const isDev = window.require('electron-is-dev');
+const { isDev } = window;
 
-const { powerSaveBlocker } = electron.remote.require('electron');
-const { initInstautoDb, initInstauto, runBotNormalMode, runBotUnfollowAllUnknown, runBotUnfollowNonMutualFollowers, runBotUnfollowOldFollowed, runBotUnfollowUserList, runBotFollowUserList, cleanupInstauto, checkHaveCookies, deleteCookies, getInstautoData, runTestCode } = electron.remote.require('./electron');
-const { store: configStore, defaults: configDefaults } = electron.remote.require('./store');
+const electron = window.require('@electron/remote');
+
+const { initInstautoDb, initInstauto, runBotNormalMode, runBotUnfollowAllUnknown, runBotUnfollowNonMutualFollowers, runBotUnfollowOldFollowed, runBotUnfollowUserList, runBotFollowUserList, cleanupInstauto, checkHaveCookies, deleteCookies, getInstautoData, runTestCode } = electron.require('./electron');
+const { store: configStore, defaults: configDefaults } = electron.require('./store');
 
 const ReactSwal = withReactContent(Swal);
 
@@ -376,7 +376,7 @@ const App = memo(() => {
         confirmButtonText: 'Stop the bot',
         cancelButtonText: 'Leave it running',
       });
-      if (result.value) electron.remote.app.quit();
+      if (result.value) electron.app.quit();
       return;
     }
 
@@ -398,8 +398,6 @@ const App = memo(() => {
 
     setLogs([]);
     setRunning(true);
-
-    const powerSaveBlockerId = powerSaveBlocker.start('prevent-display-sleep');
 
     function log(level, ...args) {
       console[level](...args);
@@ -454,7 +452,6 @@ const App = memo(() => {
     } finally {
       setRunning(false);
       cleanupInstauto();
-      powerSaveBlocker.stop(powerSaveBlockerId);
     }
   }, [advancedSettings, currentUsername, dryRun, fewUsersToFollowFollowersOf, isLoggedIn, onLogoutClick, password, refreshInstautoData, running, username, usersToFollowFollowersOf.length]);
 
