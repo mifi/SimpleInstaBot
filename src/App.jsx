@@ -24,6 +24,21 @@ const ReactSwal = withReactContent(Swal);
 const cleanupAccounts = (accounts) => accounts.map(user => user.replace(/^@/g, ''));
 
 
+function onTroubleshootingClick() {
+  Swal.fire({
+    title: 'Troubleshooting',
+    html: `
+      <ul style="text-align: left">
+        <li>Check that all usernames are correct.</li>
+        <li>Check logs for any error</li>
+        <li>Try to log out and then log back in</li>
+        <li>Check that your firewall allows the app (listen to port)</li>
+        <li>Restart the app</li>
+      </ul>
+    `,
+  });
+}
+
 const StatisticsBanner = memo(({ data: { numFollowedLastDay, numTotalFollowedUsers, numUnfollowedLastDay, numTotalUnfollowedUsers, numLikedLastDay, numTotalLikedPhotos } }) => {
   const headingStyle = { marginBottom: 5, color: '#7c3c21' };
   const statStyle = { minWidth: 30, paddingRight: 5, fontWeight: 400, fontSize: 24, color: '#303960' };
@@ -56,7 +71,7 @@ const AdvancedSettings = memo(({
   const [advancedSettingsTxt, setAdvancedSettingsTxt] = useState();
   const [valid, setValid] = useState(true);
 
-  function onTextareaChange(e) {
+  const onTextareaChange = useCallback((e) => {
     try {
       const { value } = e.target;
       setAdvancedSettingsTxt(value);
@@ -68,7 +83,7 @@ const AdvancedSettings = memo(({
       setValid(false);
       console.error(err);
     }
-  }
+  }, [onChange]);
 
   const tooHighWarning = 'NOTE: setting this too high may cause Action Blocked';
   const optsData = {
@@ -205,10 +220,10 @@ const LogView = memo(({ logs, style, fontSize } = {}) => {
 });
 
 const AccountsList = memo(({ hasWarning, accounts, setAccounts, label, placeholder, tooltip }) => {
-  function onChange(newVal) {
+  const onChange = useCallback((newVal) => {
     // Some people try hashtags
     setAccounts(newVal.filter((v) => !v.startsWith('#')));
-  }
+  }, [setAccounts]);
 
   return (
     <>
@@ -342,16 +357,16 @@ const App = memo(() => {
     updateCookiesState();
   }, []);
 
-  async function onLogoutClick() {
+  const onLogoutClick = useCallback(async () => {
     await deleteCookies();
     await updateCookiesState();
     setCurrentUsername();
     cleanupInstauto();
 
     refreshInstautoData();
-  }
+  }, [refreshInstautoData]);
 
-  async function startInstautoAction(instautoAction) {
+  const startInstautoAction = useCallback(async (instautoAction) => {
     if (running) {
       const result = await Swal.fire({
         title: 'Are you sure?',
@@ -441,9 +456,9 @@ const App = memo(() => {
       cleanupInstauto();
       powerSaveBlocker.stop(powerSaveBlockerId);
     }
-  }
+  }, [advancedSettings, currentUsername, dryRun, fewUsersToFollowFollowersOf, isLoggedIn, onLogoutClick, password, refreshInstautoData, running, username, usersToFollowFollowersOf.length]);
 
-  async function onStartPress() {
+  const onStartPress = useCallback(async () => {
     await startInstautoAction(async () => {
       await runBotNormalMode({
         usernames: cleanupAccounts(usersToFollowFollowersOf),
@@ -456,52 +471,37 @@ const App = memo(() => {
         instantStart,
       });
     });
-  }
+  }, [advancedSettings.dontUnfollowUntilDaysElapsed, advancedSettings.enableFollowUnfollow, advancedSettings.maxFollowsPerDay, advancedSettings.maxLikesPerUser, advancedSettings.runAtHour, instantStart, skipPrivate, startInstautoAction, usersToFollowFollowersOf]);
 
-  async function onUnfollowNonMutualFollowersPress() {
+  const onUnfollowNonMutualFollowersPress = useCallback(async () => {
     await startInstautoAction(async () => runBotUnfollowNonMutualFollowers());
-  }
+  }, [startInstautoAction]);
 
-  async function onUnfollowAllUnknownPress() {
+  const onUnfollowAllUnknownPress = useCallback(async () => {
     await startInstautoAction(async () => runBotUnfollowAllUnknown());
-  }
+  }, [startInstautoAction]);
 
-  async function onUnfollowOldFollowedPress() {
+  const onUnfollowOldFollowedPress = useCallback(async () => {
     await startInstautoAction(async () => runBotUnfollowOldFollowed({ ageInDays: advancedSettings.dontUnfollowUntilDaysElapsed }));
-  }
+  }, [advancedSettings.dontUnfollowUntilDaysElapsed, startInstautoAction]);
 
-  async function onUnfollowUserList(accounts) {
+  const onUnfollowUserList = useCallback(async (accounts) => {
     const accountsCleaned = cleanupAccounts(accounts);
     if (accountsCleaned.length === 0) return;
     setUnfollowUserListDialogShown(false);
     await startInstautoAction(async () => runBotUnfollowUserList({ usersToUnfollow: accountsCleaned }));
-  }
+  }, [startInstautoAction]);
 
-  async function onFollowUserList(accounts) {
+  const onFollowUserList = useCallback(async (accounts) => {
     const accountsCleaned = cleanupAccounts(accounts);
     if (accountsCleaned.length === 0) return;
     setFollowUserListDialogShown(false);
     await startInstautoAction(async () => runBotFollowUserList({ users: accountsCleaned, skipPrivate }));
-  }
+  }, [skipPrivate, startInstautoAction]);
 
-  async function onRunTestCode() {
+  const onRunTestCode = useCallback(async () => {
     await startInstautoAction(async () => runTestCode());
-  }
-
-  function onTroubleshootingClick() {
-    Swal.fire({
-      title: 'Troubleshooting',
-      html: `
-        <ul style="text-align: left">
-          <li>Check that all usernames are correct.</li>
-          <li>Check logs for any error</li>
-          <li>Try to log out and then log back in</li>
-          <li>Check that your firewall allows the app (listen to port)</li>
-          <li>Restart the app</li>
-        </ul>
-      `,
-    });
-  }
+  }, [startInstautoAction]);
 
   const onDonateClick = () => electron.shell.openExternal('https://mifi.no/thanks');
 

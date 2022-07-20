@@ -27,5 +27,8 @@
     "react/no-multi-comp": 0,
     "jsx-a11y/click-events-have-key-events": 0,
     "jsx-a11y/accessible-emoji": 0,
+    "no-multiple-empty-lines": ["error", { "max": 2, "maxBOF": 0, "maxEOF": 0 }],
+    "no-promise-executor-return": 0,
+    "react/function-component-definition": 0
   }
 }
