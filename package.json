@@ -24,8 +24,8 @@
     "instauto": "^9.1.9",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
-    "puppeteer-core": "^2.1.1",
-    "puppeteer-in-electron": "^1.0.8"
+    "puppeteer-core": "^15.4.0",
+    "puppeteer-in-electron": "^3.0.5"
   },
   "scripts": {
     "start:frontend": "BROWSER=none PORT=3001 react-scripts start",

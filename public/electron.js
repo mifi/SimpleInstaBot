@@ -29,7 +29,10 @@ let logger = console;
 
 // Must be called before electron is ready
 // NOTE: It will listen to a TCP port. could be an issue
-const pieConnectPromise = pie.connect(app, puppeteer);
+const pieConnectPromise = (async () => {
+  await pie.initialize(app);
+  return pie.connect(app, puppeteer);
+})();
 
 pieConnectPromise.catch(console.error);
 
