@@ -1,10 +1,11 @@
 import React, { memo, useState, useEffect, useRef, useCallback } from 'react';
-import { Dialog, Tooltip, IconButton, HelpIcon, Button, TextInputField, SideSheet, TagInput, Checkbox, Badge, Label, Textarea } from 'evergreen-ui';
+import { Paragraph, ResetIcon, LogOutIcon, StopIcon, PlayIcon, SettingsIcon, ListIcon, IssueIcon, TickIcon, Dialog, Tooltip, IconButton, HelpIcon, Button, TextInputField, SideSheet, TagInput, Checkbox, Badge, Label, Textarea } from 'evergreen-ui';
 import Swal from 'sweetalert2';
 import moment from 'moment';
 import isEqual from 'lodash/isEqual';
 import Lottie from 'react-lottie-player';
 import withReactContent from 'sweetalert2-react-content';
+import JSON5 from 'json5';
 
 import runningLottie from './14470-phone-running.json';
 import robotLottie from './10178-c-bot.json';
@@ -22,13 +23,17 @@ const ReactSwal = withReactContent(Swal);
 
 const cleanupAccounts = (accounts) => accounts.map(user => user.replace(/^@/g, ''));
 
+function safeSetConfig(key, val) {
+  configStore.set(key, val !== undefined ? val : null);
+}
+
 
 function onTroubleshootingClick() {
   Swal.fire({
     title: 'Troubleshooting',
     html: `
       <ul style="text-align: left">
-        <li>Check that all usernames are correct.</li>
+        <li>Check that all @account names are correct.</li>
         <li>Check logs for any error</li>
         <li>Try to log out and then log back in</li>
         <li>Check that your firewall allows the app (listen to port)</li>
@@ -65,24 +70,21 @@ const StatisticsBanner = memo(({ data: { numFollowedLastDay, numTotalFollowedUse
 });
 
 const AdvancedSettings = memo(({
-  advancedSettings, onChange, dryRun, setDryRun, instantStart, setInstantStart,
+  advancedSettings, onChange, dryRun, setDryRun, instantStart, setInstantStart, onClose,
 }) => {
   const [advancedSettingsTxt, setAdvancedSettingsTxt] = useState();
-  const [valid, setValid] = useState(true);
+  const [advancedSettingsParsed, setAdvancedSettingsParsed] = useState(advancedSettings);
 
   const onTextareaChange = useCallback((e) => {
+    const { value } = e.target;
+    setAdvancedSettingsTxt(value);
     try {
-      const { value } = e.target;
-      setAdvancedSettingsTxt(value);
-      const parsed = JSON.parse(value);
-      setValid(true);
-      onChange(parsed);
-      setAdvancedSettingsTxt();
+      setAdvancedSettingsParsed(JSON5.parse(value));
     } catch (err) {
-      setValid(false);
+      setAdvancedSettingsParsed();
       console.error(err);
     }
-  }, [onChange]);
+  }, []);
 
   const tooHighWarning = 'NOTE: setting this too high may cause Action Blocked';
   const optsData = {
@@ -125,9 +127,26 @@ const AdvancedSettings = memo(({
     runAtHour: {
       description: 'Repeat at this hour (24hr based) every day',
     },
+    userAgent: {
+      description: 'Set the browser\'s user agent to this value',
+    },
   };
 
-  const formatValue = (value) => (value != null ? String(value) : 'unset');
+  const onResetClick = useCallback(() => {
+    setAdvancedSettingsTxt();
+    setAdvancedSettingsParsed(advancedSettings);
+  }, [advancedSettings]);
+
+  const onSaveClick = useCallback(() => {
+    if (!advancedSettingsParsed) return;
+
+    onChange(advancedSettingsParsed);
+    setAdvancedSettingsTxt();
+
+    onClose();
+  }, [advancedSettingsParsed, onChange, onClose]);
+
+  const formatValue = (value) => (value ? String(value) : 'unset');
 
   return (
     <>
@@ -138,7 +157,7 @@ const AdvancedSettings = memo(({
         style={{ width: 100, height: 100, margin: 0 }}
       />
 
-      {Object.entries(advancedSettings).map(([key, value]) => {
+      {Object.entries(advancedSettingsParsed || advancedSettings).map(([key, value]) => {
         const defaultValue = configDefaults[key];
         const hasChanged = !isEqual(defaultValue, value);
 
@@ -161,17 +180,23 @@ const AdvancedSettings = memo(({
       <Label
         htmlFor="textarea"
         marginBottom={4}
+        marginTop={10}
         display="block"
       >
         Change settings here (JSON):
       </Label>
       <Textarea
-        isInvalid={!valid}
+        isInvalid={!advancedSettingsParsed}
         rows={10}
+        fontSize={16}
+        lineHeight="1.2em"
         id="textarea"
+        spellCheck={false}
         onChange={onTextareaChange}
-        value={advancedSettingsTxt != null ? advancedSettingsTxt : JSON.stringify(advancedSettings, null, 2)}
+        value={advancedSettingsTxt != null ? advancedSettingsTxt : JSON5.stringify(advancedSettings, null, 2)}
       />
+
+      {!advancedSettingsParsed && <Paragraph color="danger">The JSON has a syntax error, please fix.</Paragraph>}
 
       <div style={{ margin: '30px 0' }}>
         <Checkbox
@@ -186,6 +211,9 @@ const AdvancedSettings = memo(({
           onChange={e => setInstantStart(e.target.checked)}
         />
       </div>
+
+      <Button iconBefore={TickIcon} type="button" disabled={!advancedSettingsParsed} onClick={onSaveClick}>Save &amp; Close</Button>
+      <IconButton icon={ResetIcon} intent="danger" onClick={onResetClick} />
     </>
   );
 });
@@ -227,7 +255,7 @@ const AccountsList = memo(({ hasWarning, accounts, setAccounts, label, placehold
   return (
     <>
       <Label>
-        {label}<br /><b>Press ENTER between each username</b>
+        {label}<br /><b>Press ENTER between each account</b>
       </Label>
       {tooltip && (
         <Tooltip content={tooltip}>
@@ -256,7 +284,8 @@ const AccountsListDialog = ({ isShown, onCloseComplete, onConfirm, label }) => {
 };
 
 const App = memo(() => {
-  const [advancedSettings, setAdvancedSettings] = useState({
+  const [advancedSettings, setAdvancedSettings] = useState(() => ({
+    userAgent: configStore.get('userAgent'),
     maxFollowsPerDay: configStore.get('maxFollowsPerDay'),
     maxFollowsPerHour: configStore.get('maxFollowsPerHour'),
     maxLikesPerDay: configStore.get('maxLikesPerDay'),
@@ -270,25 +299,26 @@ const App = memo(() => {
     followUserMinFollowing: configStore.get('followUserMinFollowing'),
     dontUnfollowUntilDaysElapsed: configStore.get('dontUnfollowUntilDaysElapsed'),
     runAtHour: configStore.get('runAtHour'),
-  });
+  }));
 
   function setAdvancedSetting(key, value) {
     setAdvancedSettings(s => ({ ...s, [key]: value }));
   }
 
-  useEffect(() => configStore.set('maxFollowsPerDay', advancedSettings.maxFollowsPerDay), [advancedSettings.maxFollowsPerDay]);
-  useEffect(() => configStore.set('maxFollowsPerHour', advancedSettings.maxFollowsPerHour), [advancedSettings.maxFollowsPerHour]);
-  useEffect(() => configStore.set('maxLikesPerDay', advancedSettings.maxLikesPerDay), [advancedSettings.maxLikesPerDay]);
-  useEffect(() => configStore.set('maxLikesPerUser', advancedSettings.maxLikesPerUser), [advancedSettings.maxLikesPerUser]);
-  useEffect(() => configStore.set('enableFollowUnfollow', advancedSettings.enableFollowUnfollow), [advancedSettings.enableFollowUnfollow]);
-  useEffect(() => configStore.set('followUserRatioMin', advancedSettings.followUserRatioMin), [advancedSettings.followUserRatioMin]);
-  useEffect(() => configStore.set('followUserRatioMax', advancedSettings.followUserRatioMax), [advancedSettings.followUserRatioMax]);
-  useEffect(() => configStore.set('followUserMaxFollowers', advancedSettings.followUserMaxFollowers), [advancedSettings.followUserMaxFollowers]);
-  useEffect(() => configStore.set('followUserMaxFollowing', advancedSettings.followUserMaxFollowing), [advancedSettings.followUserMaxFollowing]);
-  useEffect(() => configStore.set('followUserMinFollowers', advancedSettings.followUserMinFollowers), [advancedSettings.followUserMinFollowers]);
-  useEffect(() => configStore.set('followUserMinFollowing', advancedSettings.followUserMinFollowing), [advancedSettings.followUserMinFollowing]);
-  useEffect(() => configStore.set('dontUnfollowUntilDaysElapsed', advancedSettings.dontUnfollowUntilDaysElapsed), [advancedSettings.dontUnfollowUntilDaysElapsed]);
-  useEffect(() => configStore.set('runAtHour', advancedSettings.runAtHour), [advancedSettings.runAtHour]);
+  useEffect(() => safeSetConfig('userAgent', advancedSettings.userAgent), [advancedSettings.userAgent]);
+  useEffect(() => safeSetConfig('maxFollowsPerDay', advancedSettings.maxFollowsPerDay), [advancedSettings.maxFollowsPerDay]);
+  useEffect(() => safeSetConfig('maxFollowsPerHour', advancedSettings.maxFollowsPerHour), [advancedSettings.maxFollowsPerHour]);
+  useEffect(() => safeSetConfig('maxLikesPerDay', advancedSettings.maxLikesPerDay), [advancedSettings.maxLikesPerDay]);
+  useEffect(() => safeSetConfig('maxLikesPerUser', advancedSettings.maxLikesPerUser), [advancedSettings.maxLikesPerUser]);
+  useEffect(() => safeSetConfig('enableFollowUnfollow', advancedSettings.enableFollowUnfollow), [advancedSettings.enableFollowUnfollow]);
+  useEffect(() => safeSetConfig('followUserRatioMin', advancedSettings.followUserRatioMin), [advancedSettings.followUserRatioMin]);
+  useEffect(() => safeSetConfig('followUserRatioMax', advancedSettings.followUserRatioMax), [advancedSettings.followUserRatioMax]);
+  useEffect(() => safeSetConfig('followUserMaxFollowers', advancedSettings.followUserMaxFollowers), [advancedSettings.followUserMaxFollowers]);
+  useEffect(() => safeSetConfig('followUserMaxFollowing', advancedSettings.followUserMaxFollowing), [advancedSettings.followUserMaxFollowing]);
+  useEffect(() => safeSetConfig('followUserMinFollowers', advancedSettings.followUserMinFollowers), [advancedSettings.followUserMinFollowers]);
+  useEffect(() => safeSetConfig('followUserMinFollowing', advancedSettings.followUserMinFollowing), [advancedSettings.followUserMinFollowing]);
+  useEffect(() => safeSetConfig('dontUnfollowUntilDaysElapsed', advancedSettings.dontUnfollowUntilDaysElapsed), [advancedSettings.dontUnfollowUntilDaysElapsed]);
+  useEffect(() => safeSetConfig('runAtHour', advancedSettings.runAtHour), [advancedSettings.runAtHour]);
 
   const [haveCookies, setHaveCookies] = useState(false);
   const [dryRun, setDryRun] = useState(isDev);
@@ -302,7 +332,7 @@ const App = memo(() => {
   const [usersToFollowFollowersOf, setUsersToFollowFollowersOf] = useState(configStore.get('usersToFollowFollowersOf'));
 
   const [currentUsername, setCurrentUsername] = useState(configStore.get('currentUsername'));
-  useEffect(() => (currentUsername ? configStore.set('currentUsername', currentUsername) : configStore.delete('currentUsername')), [currentUsername]);
+  useEffect(() => (currentUsername ? safeSetConfig('currentUsername', currentUsername) : configStore.delete('currentUsername')), [currentUsername]);
 
   const [instantStart, setInstantStart] = useState(true);
 
@@ -329,8 +359,8 @@ const App = memo(() => {
 
   const [instautoData, setInstautoData] = useState();
 
-  useEffect(() => configStore.set('skipPrivate', skipPrivate), [skipPrivate]);
-  useEffect(() => configStore.set('usersToFollowFollowersOf', usersToFollowFollowersOf), [usersToFollowFollowersOf]);
+  useEffect(() => safeSetConfig('skipPrivate', skipPrivate), [skipPrivate]);
+  useEffect(() => safeSetConfig('usersToFollowFollowersOf', usersToFollowFollowersOf), [usersToFollowFollowersOf]);
 
   const fewUsersToFollowFollowersOf = usersToFollowFollowersOf.length < 5;
 
@@ -380,7 +410,7 @@ const App = memo(() => {
     }
 
     if (usersToFollowFollowersOf.length < 1) {
-      await Swal.fire({ icon: 'error', text: 'Please add at least 1 username to the list!' });
+      await Swal.fire({ icon: 'error', text: 'Please add at least 1 account to the list!' });
       return;
     }
 
@@ -422,7 +452,17 @@ const App = memo(() => {
       refreshInstautoData();
 
       await initInstauto({
-        ...advancedSettings,
+        userAgent: advancedSettings.userAgent,
+        dontUnfollowUntilDaysElapsed: advancedSettings.dontUnfollowUntilDaysElapsed,
+        maxFollowsPerHour: advancedSettings.maxFollowsPerHour,
+        maxFollowsPerDay: advancedSettings.maxFollowsPerDay,
+        maxLikesPerDay: advancedSettings.maxLikesPerDay,
+        followUserRatioMin: advancedSettings.followUserRatioMin,
+        followUserRatioMax: advancedSettings.followUserRatioMax,
+        followUserMaxFollowers: advancedSettings.followUserMaxFollowers,
+        followUserMaxFollowing: advancedSettings.followUserMaxFollowing,
+        followUserMinFollowers: advancedSettings.followUserMinFollowers,
+        followUserMinFollowing: advancedSettings.followUserMinFollowing,
 
         excludeUsers: [],
 
@@ -545,7 +585,7 @@ const App = memo(() => {
                   {isLoggedIn ? (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                       <div style={{ marginBottom: 20 }}>Your bot is logged in and ready to go!</div>
-                      <Button iconBefore="log-out" type="button" intent="danger" onClick={onLogoutClick}>Log out</Button>
+                      <Button iconBefore={LogOutIcon} type="button" intent="danger" onClick={onLogoutClick}>Log out</Button>
                     </div>
                   ) : (
                     <div>
@@ -573,7 +613,7 @@ const App = memo(() => {
 
                 <div style={{ width: '50%', margin: '0px 10px' }}>
                   <div style={{ marginBottom: 10, marginTop: 20 }}>
-                    <AccountsList accounts={usersToFollowFollowersOf} setAccounts={setUsersToFollowFollowersOf} hasWarning={fewUsersToFollowFollowersOf} label="List of accounts followers to follow" placeholder="Influencers, celebrities, etc." tooltip={`List of accounts whose followers the bot should follow. Choose accounts with a lot of followers (e.g influencers above 100k). The bot will then visit each of these and follow their most recent followers, in hope that they will follow you back. ${advancedSettings.dontUnfollowUntilDaysElapsed} days later, it will unfollow them. For best results, choose accounts from a niche market that you want to target.`} />
+                    <AccountsList accounts={usersToFollowFollowersOf} setAccounts={setUsersToFollowFollowersOf} hasWarning={fewUsersToFollowFollowersOf} label="ist of accounts followers to follow" placeholder="Influencers, celebrities, etc." tooltip={`Input a list of accounts whose followers the bot should follow. Choose accounts with a lot of followers (e.g influencers above 100k). The bot will then visit each of these and follow their most recent followers, in hope that they will follow you back. ${advancedSettings.dontUnfollowUntilDaysElapsed} days later, it will unfollow them. For best results, choose accounts from a niche market that you want to target.`} />
                   </div>
 
                   <div style={{ margin: '20px 0' }}>
@@ -586,7 +626,7 @@ const App = memo(() => {
 
                   <div style={{ margin: '20px 0' }}>
                     <Checkbox
-                      label="Like a few photos after following users?"
+                      label="Also like a few photos after following users?"
                       checked={advancedSettings.maxLikesPerUser > 0}
                       onChange={e => setAdvancedSetting('maxLikesPerUser', e.target.checked ? 2 : 0)}
                     />
@@ -603,11 +643,11 @@ const App = memo(() => {
 
           <div style={{ margin: '20px 0', textAlign: 'center' }}>
             {running ? (
-              <Button iconBefore="stop" height={40} type="button" intent="danger" onClick={onStartPress}>Stop bot</Button>
+              <Button iconBefore={StopIcon} height={40} type="button" intent="danger" onClick={onStartPress}>Stop bot</Button>
             ) : (
               <>
                 <Tooltip content="Start the bot in the primary mode of operation (follow/unfollow/like etc)">
-                  <Button iconBefore="play" height={40} type="button" intent="success" onClick={onStartPress}>Start bot</Button>
+                  <Button iconBefore={PlayIcon} height={40} type="button" intent="success" onClick={onStartPress}>Start bot</Button>
                 </Tooltip>
                 <br />
                 <Tooltip content={`Special mode of operation: Unfollow all accounts that were followed by bot more than ${advancedSettings.dontUnfollowUntilDaysElapsed} days ago`}>
@@ -633,9 +673,9 @@ const App = memo(() => {
           </div>
 
           <div style={{ margin: '20px 0', textAlign: 'center' }}>
-            <Button iconBefore="settings" type="button" onClick={() => setAdvancedVisible(true)}>Show advanced settings</Button>
-            {logs.length > 0 && <Button iconBefore="list" type="button" onClick={() => setLogsVisible(true)}>Logs</Button>}
-            <Button iconBefore="issue" type="button" onClick={onTroubleshootingClick}>Troubleshooting</Button>
+            <Button iconBefore={SettingsIcon} type="button" onClick={() => setAdvancedVisible(true)}>Show advanced settings</Button>
+            {logs.length > 0 && <Button iconBefore={ListIcon} type="button" onClick={() => setLogsVisible(true)}>Logs</Button>}
+            <Button iconBefore={IssueIcon} type="button" onClick={onTroubleshootingClick}>Troubleshooting</Button>
           </div>
 
           {instautoData && !running && <StatisticsBanner data={instautoData} />}
@@ -657,9 +697,7 @@ const App = memo(() => {
         <div style={{ margin: 20 }}>
           <h3>Advanced settings</h3>
 
-          <AdvancedSettings dryRun={dryRun} setDryRun={setDryRun} advancedSettings={advancedSettings} onChange={setAdvancedSettings} instantStart={instantStart} setInstantStart={setInstantStart} />
-
-          <Button iconBefore="tick" type="button" onClick={() => setAdvancedVisible(false)}>Save &amp; Close</Button>
+          <AdvancedSettings dryRun={dryRun} setDryRun={setDryRun} advancedSettings={advancedSettings} onChange={setAdvancedSettings} instantStart={instantStart} setInstantStart={setInstantStart} onClose={() => setAdvancedVisible(false)} />
         </div>
       </SideSheet>
 

@@ -5,6 +5,7 @@ const defaults = {
   currentUsername: undefined,
   usersToFollowFollowersOf: ['@lostleblanc', '@samkolder', '@bomkanari'],
 
+  userAgent: '',
   maxFollowsPerHour: 20,
   maxFollowsPerDay: 150,
   maxLikesPerDay: 50,
