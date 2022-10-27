@@ -6022,10 +6022,10 @@ inline-style-prefixer@^5.0.4:
   dependencies:
     css-in-js-utils "^2.0.0"
 
-instauto@^9.1.10:
-  version "9.1.10"
-  resolved "https://registry.yarnpkg.com/instauto/-/instauto-9.1.10.tgz#f8a2d1f31d95400e3b6e38ef2ec4de3e21e6e635"
-  integrity sha512-Sy4Hzncc05HLwpKcFbbrnG2gJsCGMhECMn+T+viFQVFDePGvommQuGAPSfXZg0HgaStVaug1JInPpdR/7NZLQA==
+instauto@^9.2.1:
+  version "9.2.1"
+  resolved "https://registry.yarnpkg.com/instauto/-/instauto-9.2.1.tgz#3af9561859308078ecfa87b0ca109b5732675961"
+  integrity sha512-E2UztXYiOvTTZcFGNMlO551QHQjfvcfUUtpi7TT7d9bsx8HFbv5C9gKFLr8nEFonP1+4Y+6zdrzjgUS1uTJNDA==
   dependencies:
     fs-extra "^5.0.0"
     lodash "^4.17.10"
