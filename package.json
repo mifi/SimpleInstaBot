@@ -116,7 +116,7 @@
         {
           "arch": "arm64",
           "target": "tar.bz2"
-        },
+        }
       ]
     }
   }
