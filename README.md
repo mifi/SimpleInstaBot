@@ -98,8 +98,8 @@ DISPLAY=:0 ./simpleinstabot --no-sandbox
 
 ## FAQ
 
-- Q: Can I run it on multiple accounts (but not at the same time)?
-- A: Yes, just log out, and then log in to your other account instead. Followed/liked etc will be remembered.
+- Q: Can I run it on multiple accounts at the same time?
+- A: Yes, with the command line argument `--root` ([cmnt](https://github.com/mifi/SimpleInstaBot#multiple-accounts))
 
 ## Donate 🙈
 
