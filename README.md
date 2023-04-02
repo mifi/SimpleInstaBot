@@ -99,7 +99,7 @@ DISPLAY=:0 ./simpleinstabot --no-sandbox
 ## FAQ
 
 - Q: Can I run it on multiple accounts at the same time?
-- A: Yes, with the command line argument `--root` ([cmnt](https://github.com/mifi/SimpleInstaBot#multiple-accounts))
+- A: Yes, with the command line argument `--root` (see [multiple accounts](#multiple-accounts))
 
 ## Donate 🙈
 
