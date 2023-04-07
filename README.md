@@ -2,7 +2,7 @@
 
 Use a robot to attract more followers. Now as a simple desktop app!
 
-[![Demo](https://github.com/rishibaghel25/SimpleInstaBot/blob/changes/SimpleInstaBot.svg)](https://www.youtube.com/watch?v=xkjOozYU3aA)
+[![Demo](./SimpleInstaBot.svg)](https://www.youtube.com/watch?v=xkjOozYU3aA)
 
 [![Discord](https://img.shields.io/discord/986052713425027072)](https://discord.gg/Rh3KT9zyhj) [![PayPal](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/mifino/usd)
 
