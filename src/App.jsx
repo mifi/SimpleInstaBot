@@ -681,7 +681,7 @@ const App = memo(() => {
           {instautoData && !running && <StatisticsBanner data={instautoData} />}
 
           <div style={{ position: 'fixed', right: 5, bottom: 5, background: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center' }}>
-            <Button appearance="minimal" onClick={() => electron.shell.openExternal('https://mifi.no/')}>More apps by mifi.no</Button>
+            <Button appearance="minimal" onClick={() => electron.shell.openExternal('https://growup-media.com/')}>More apps by GrowUp</Button>
             <Lottie
               loop
               play={!running}
