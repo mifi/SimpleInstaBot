@@ -613,7 +613,7 @@ const App = memo(() => {
 
                 <div style={{ width: '50%', margin: '0px 10px' }}>
                   <div style={{ marginBottom: 10, marginTop: 20 }}>
-                    <AccountsList accounts={usersToFollowFollowersOf} setAccounts={setUsersToFollowFollowersOf} hasWarning={fewUsersToFollowFollowersOf} label="ist of accounts followers to follow" placeholder="Influencers, celebrities, etc." tooltip={`Input a list of accounts whose followers the bot should follow. Choose accounts with a lot of followers (e.g influencers above 100k). The bot will then visit each of these and follow their most recent followers, in hope that they will follow you back. ${advancedSettings.dontUnfollowUntilDaysElapsed} days later, it will unfollow them. For best results, choose accounts from a niche market that you want to target.`} />
+                    <AccountsList accounts={usersToFollowFollowersOf} setAccounts={setUsersToFollowFollowersOf} hasWarning={fewUsersToFollowFollowersOf} label="List of accounts followers to follow" placeholder="Influencers, celebrities, etc." tooltip={`Input a list of accounts whose followers the bot should follow. Choose accounts with a lot of followers (e.g influencers above 100k). The bot will then visit each of these and follow their most recent followers, in hope that they will follow you back. ${advancedSettings.dontUnfollowUntilDaysElapsed} days later, it will unfollow them. For best results, choose accounts from a niche market that you want to target.`} />
                   </div>
 
                   <div style={{ margin: '20px 0' }}>
