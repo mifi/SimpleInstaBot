@@ -76,7 +76,7 @@
     "react-icons": "^4.4.0",
     "react-lottie-player": "^1.4.3",
     "react-scripts": "5.0.1",
-    "sharp": "^0.30.7",
+    "sharp": "^0.32.6",
     "sweetalert2": "^11.4.23",
     "sweetalert2-react-content": "^5.0.1",
     "wait-on": "^6.0.1"
