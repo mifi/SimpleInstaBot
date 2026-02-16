@@ -2,8 +2,15 @@
 
 # dependencies
 /node_modules
-/.pnp
-.pnp.js
+
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+/icon-build
 
 # testing
 /coverage
@@ -22,3 +29,4 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
