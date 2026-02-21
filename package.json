@@ -21,7 +21,7 @@
     "electron-store": "^5.1.1",
     "filenamify": "^4.2.0",
     "fs-extra": "^8.1.0",
-    "instauto": "^9.2.1",
+    "instauto": "9.2.1",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "puppeteer-core": "^15.4.0",
@@ -43,7 +43,7 @@
     "prepack-win": "yarn build",
     "pack-linux": "electron-builder --linux",
     "prepack-linux": "yarn build",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "electron-builder install-app-deps && patch-package"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -71,6 +71,7 @@
     "evergreen-ui": "^6.10.3",
     "json5": "^2.2.2",
     "mkdirp": "^1.0.4",
+    "patch-package": "^8.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.4.0",

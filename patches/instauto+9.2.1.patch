@@ -1,0 +1,154 @@
+diff --git a/node_modules/instauto/src/index.js b/node_modules/instauto/src/index.js
+index b406a84..369c890 100644
+--- a/node_modules/instauto/src/index.js
++++ b/node_modules/instauto/src/index.js
+@@ -995,14 +995,80 @@ const Instauto = async (db, browser, options) => {
+ 
+   async function tryClickLogin() {
+     async function tryClickButton(xpath) {
+-      const btn = (await page.$x(xpath))[0];
+-      if (!btn) return false;
+-      await btn.click();
+-      return true;
++      try {
++        const btn = (await page.$x(xpath))[0];
++        if (!btn) return false;
++        await btn.click();
++        await sleep(500); // Small delay after click
++        return true;
++      } catch (err) {
++        // Button might have been clicked and page navigated
++        logger.log('Click attempt resulted in:', err.message);
++        return false;
++      }
++    }
++
++    // Try CSS selector for submit button first (most reliable)
++    try {
++      const submitBtn = await page.$('button[type="submit"]');
++      if (submitBtn) {
++        const isVisible = await page.evaluate(el => {
++          const style = window.getComputedStyle(el);
++          return style.display !== 'none' && style.visibility !== 'hidden' && el.offsetParent !== null;
++        }, submitBtn);
++        
++        if (isVisible) {
++          logger.log('Found visible submit button, clicking...');
++          await submitBtn.click();
++          await sleep(500);
++          return true;
++        }
++      }
++    } catch (err) {
++      logger.log('Submit button click error:', err.message);
++    }
++    
++    // Try div with role="button" containing "Log in" text
++    try {
++      const divButtons = await page.$$('div[role="button"]');
++      for (const btn of divButtons) {
++        const text = await page.evaluate(el => el.textContent?.trim(), btn);
++        if (text && (text === 'Log in' || text === 'Log In')) {
++          logger.log('Found div button with Log in text, clicking...');
++          await btn.click();
++          await sleep(500);
++          return true;
++        }
++      }
++    } catch (err) {
++      logger.log('Div button error:', err.message);
+     }
+ 
++    // Try multiple XPath selectors
+     if (await tryClickButton("//button[.//text() = 'Log In']")) return true;
+     if (await tryClickButton("//button[.//text() = 'Log in']")) return true; // https://github.com/mifi/instauto/pull/110 https://github.com/mifi/instauto/issues/109
++    if (await tryClickButton("//button[contains(text(), 'Log in')]")) return true;
++    if (await tryClickButton("//button[contains(text(), 'Log In')]")) return true;
++    if (await tryClickButton("//button[@type='submit']")) return true;
++    if (await tryClickButton("//div[@role='button' and contains(., 'Log in')]")) return true;
++    if (await tryClickButton("//div[@role='button' and contains(., 'Log In')]")) return true;
++    
++    // Try finding button by text content as last resort
++    try {
++      const buttons = await page.$$('button');
++      for (const btn of buttons) {
++        const text = await page.evaluate(el => el.textContent?.trim(), btn);
++        if (text && (text.includes('Log in') || text.includes('Log In'))) {
++          logger.log('Found button with login text via text search, clicking...');
++          await btn.click();
++          await sleep(500);
++          return true;
++        }
++      }
++    } catch (err) {
++      logger.log('Button text search error:', err.message);
++    }
++    
+     return false;
+   }
+ 
+@@ -1028,16 +1094,58 @@ const Instauto = async (db, browser, options) => {
+     // Mobile version https://github.com/mifi/SimpleInstaBot/issues/7
+     await tryPressButton(await page.$x('//button[contains(text(), "Log In")]'), 'Login form button');
+ 
+-    await page.type('input[name="username"]', myUsername, { delay: 50 });
++    // Try multiple selectors for username field (Instagram keeps changing them)
++    let usernameInput = await page.$('input[name="username"]');
++    if (!usernameInput) usernameInput = await page.$('input[aria-label="Phone number, username, or email"]');
++    if (!usernameInput) usernameInput = await page.$('input[type="text"]');
++    if (!usernameInput) throw new Error('Cannot find username input field');
++
++    await usernameInput.type(myUsername, { delay: 50 });
+     await sleep(1000);
+-    await page.type('input[name="password"]', password, { delay: 50 });
++
++    // Try multiple selectors for password field
++    let passwordInput = await page.$('input[name="password"]');
++    if (!passwordInput) passwordInput = await page.$('input[type="password"]');
++    if (!passwordInput) throw new Error('Cannot find password input field');
++
++    await passwordInput.type(password, { delay: 50 });
+     await sleep(1000);
+ 
+-    for (;;) {
++    logger.log('Attempting to click login button...');
++    let loginClicked = false;
++
++    // Try to find and click the login button with better error handling
++    try {
+       const didClickLogin = await tryClickLogin();
+-      if (didClickLogin) break;
+-      logger.warn('Login button not found. Maybe you can help me click it? And also report an issue on github with a screenshot of what you\'re seeing :)');
+-      await sleep(6000);
++      if (didClickLogin) {
++        logger.log('Login button clicked successfully');
++        loginClicked = true;
++      }
++    } catch (err) {
++      logger.warn('Error clicking login button:', err.message);
++    }
++
++    if (!loginClicked) {
++      logger.warn('Could not automatically click login button. Please click it manually.');
++      // Wait for either login button to be clicked manually or for successful login
++      let attempts = 0;
++      while (!(await isLoggedIn()) && attempts < 30) {
++        await sleep(2000);
++        attempts++;
++        
++        // Keep trying to click the button while waiting
++        if (attempts % 3 === 0) {
++          try {
++            const didClick = await tryClickLogin();
++            if (didClick) {
++              logger.log('Login button clicked on retry attempt');
++              break;
++            }
++          } catch (err) {
++            // Ignore errors, might be navigating
++          }
++        }
++      }
+     }
+ 
+     await sleepFixed(10000);
