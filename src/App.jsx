@@ -468,8 +468,8 @@ const App = memo(() => {
 
         dryRun,
 
-        username,
-        password,
+        username: isLoggedIn ? currentUsername : username,
+        password: isLoggedIn ? undefined : password,
 
         logger,
       });
