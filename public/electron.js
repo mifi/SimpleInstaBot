@@ -9,7 +9,6 @@ const fs = require('fs-extra');
 const filenamify = require('filenamify');
 const yargsParser = require('yargs-parser');
 
-const Instauto = require('instauto');
 const moment = require('moment');
 const electronRemote = require('@electron/remote/main'); // todo migrate away from this
 
@@ -22,6 +21,8 @@ let instautoDb;
 let instauto;
 let instautoWindow;
 let logger = console;
+
+let instautoModulePromise;
 
 let powerSaveBlockerId;
 
@@ -74,6 +75,8 @@ async function deleteCookies() {
 }
 
 async function initInstautoDb(usernameIn) {
+  if (!instautoModulePromise) instautoModulePromise = import('instauto');
+  const { JSONDB } = await instautoModulePromise;
   const username = usernameIn && filenamify(usernameIn);
   const followedDbPath = getFilePath(username ? `${username}-followed.json` : 'followed.json');
   const unfollowedDbPath = getFilePath(username ? `${username}-unfollowed.json` : 'followed.json');
@@ -86,7 +89,7 @@ async function initInstautoDb(usernameIn) {
     await fs.move(getFilePath('liked-photos.json'), likedPhotosDbPath).catch(() => {});
   }
 
-  instautoDb = await Instauto.JSONDB({
+  instautoDb = await JSONDB({
     followedDbPath,
     unfollowedDbPath,
     likedPhotosDbPath,
@@ -126,6 +129,8 @@ async function initInstauto({
   dryRun,
   logger: loggerArg,
 }) {
+  if (!instautoModulePromise) instautoModulePromise = import('instauto');
+  const { default: Instauto } = await instautoModulePromise;
   instautoWindow = new BrowserWindow({
     x: 0,
     y: 0,
@@ -138,12 +143,8 @@ async function initInstauto({
   const { session } = instautoWindow.webContents;
   await session.clearStorageData(); // we store cookies etc separately
 
-  const browser = { // TODO improve API in instauto to accept page instead of browser?
-    newPage: async () => {
-      const pieBrowser = await pieConnectPromise;
-      return pie.getPage(pieBrowser, instautoWindow);
-    },
-  };
+  const pieBrowser = await pieConnectPromise;
+  const page = await pie.getPage(pieBrowser, instautoWindow);
 
   const options = {
     // Testing
@@ -175,7 +176,8 @@ async function initInstauto({
 
   mainWindow.focus();
 
-  instauto = await Instauto(instautoDb, browser, options);
+  instauto = Instauto(instautoDb, page, options);
+  await instauto.init();
   logger = loggerArg;
 
   powerSaveBlockerId = powerSaveBlocker.start('prevent-display-sleep');

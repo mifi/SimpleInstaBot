@@ -21,10 +21,10 @@
     "electron-store": "^5.1.1",
     "filenamify": "^4.2.0",
     "fs-extra": "^8.1.0",
-    "instauto": "^9.2.1",
+    "instauto": "^10.0.0",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
-    "puppeteer-core": "^15.4.0",
+    "puppeteer-core": "^24.37.5",
     "puppeteer-in-electron": "^3.0.5",
     "yargs-parser": "^21.0.1"
   },
