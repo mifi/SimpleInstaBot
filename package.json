@@ -84,7 +84,8 @@
   },
   "build": {
     "files": [
-      "build/**/*"
+      "build/**/*",
+      "node_modules/instauto/**/*"
     ],
     "appId": "no.mifi.simpleinstabot",
     "artifactName": "${productName}-${os}.${ext}",
