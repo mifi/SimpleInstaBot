@@ -19,13 +19,18 @@ jobs:
       # Windows fix. See https://github.com/actions/checkout/issues/226
       - run: git config --global core.autocrlf false
 
-      - name: Check out Git repository
-        uses: actions/checkout@v1
+      - uses: actions/checkout@v6
 
-      - name: Install Node.js, NPM and Yarn
-        uses: actions/setup-node@v1
+      # todo remove once fixed https://github.com/actions/setup-node/issues/531
+      - uses: actions/setup-node@v6
         with:
-          node-version: 16
+          node-version: 22
+      - run: corepack enable
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: 'yarn'
 
       - name: Prepare for app notarization
         if: startsWith(matrix.os, 'macos')

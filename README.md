@@ -63,7 +63,7 @@ I advise you to follow these guidelines:
 
 To run the bot on multiple accounts at the same time, run it with the command line argument `--root` to specify a unique path for each instance:
 
-```
+```bash
 /path/to/SimpleInstaBot --root ~/Desktop/account1
 /path/to/SimpleInstaBot --root ~/Desktop/account2
 ```
@@ -124,8 +124,9 @@ Icons made by [Freepik](https://www.flaticon.com/authors/freepik) from [www.flat
 
 ## Releasing
 
-```
-npm version patch && git push && git push --tags
+```bash
+npm version patch
+git push --follow-tags
 ```
 Wait for github actions and go to https://github.com/mifi/SimpleInstaBot/releases
 

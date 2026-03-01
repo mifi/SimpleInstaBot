@@ -7,11 +7,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v3
+      # todo remove once fixed https://github.com/actions/setup-node/issues/531
+      - uses: actions/setup-node@v6
         with:
-          node-version: 16
+          node-version: 22
+      - run: corepack enable
 
-      - run: yarn
-      - run: npm run lint
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: 'yarn'
+
+      - run: yarn install --immutable
+      - run: yarn build
+      - run: yarn check
+      - run: yarn dedupe --check

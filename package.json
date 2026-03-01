@@ -37,6 +37,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint --ext .jsx --ext .js .",
+    "check": "yarn lint && yarn test",
     "pack-mac": "electron-builder --mac",
     "prepack-mac": "yarn build",
     "pack-win": "electron-builder --win",
