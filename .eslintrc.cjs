@@ -1,17 +1,12 @@
-{
-  "extends": "airbnb",
-  "plugins": [
-    "react-hooks"
-  ],
-  "parserOptions": {
-    "sourceType": "module",
-    "ecmaVersion": 2020
+module.exports = {
+  extends: ['mifi'],
+  rules: {
+    'unicorn/prefer-global-this': 0,
   },
-  "env": {
-    "node": true,
-    "browser": true
+  env: {
+    browser: true, // puppeteer
   },
-  "rules": {
+    "rules": {
     "no-await-in-loop": 0,
     "react/prop-types": 0,
     "react/forbid-prop-types": 0,
@@ -35,4 +30,4 @@
     "no-promise-executor-return": 0,
     "react/function-component-definition": 0
   }
-}
+};

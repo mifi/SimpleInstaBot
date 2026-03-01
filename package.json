@@ -35,7 +35,7 @@
     "electron-store": "^5.2.0",
     "filenamify": "^4.3.0",
     "fs-extra": "^8.1.0",
-    "instauto": "^10.0.0",
+    "instauto": "^10.0.1",
     "lodash": "^4.17.23",
     "moment": "^2.30.1",
     "puppeteer-core": "^24.37.5",

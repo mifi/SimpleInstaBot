@@ -4984,13 +4984,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"instauto@npm:^10.0.0":
-  version: 10.0.0
-  resolution: "instauto@npm:10.0.0"
+"instauto@npm:^10.0.1":
+  version: 10.0.1
+  resolution: "instauto@npm:10.0.1"
   dependencies:
     lodash: "npm:^4.17.23"
     user-agents: "npm:^1.1.669"
-  checksum: 10c0/4c7dc4e6e9363e990070c5b618fc8735d23af5dee7285e728b853bb3760faa4464a2ac2599763e79e052dea6f205b8308bbbeb166b7c6bde9cae9f8dad368b73
+  checksum: 10c0/13da33a8f8221f849f2162c018637ab36b6cb781fe624f86ce91a4c2c25d02122cf19a301f5337bf1750e76a56f3a5bf833f72ab9dd3cb312db1da2e5cb14f33
   languageName: node
   linkType: hard
 
@@ -7654,7 +7654,7 @@ __metadata:
     evergreen-ui: "npm:^6.13.3"
     filenamify: "npm:^4.3.0"
     fs-extra: "npm:^8.1.0"
-    instauto: "npm:^10.0.0"
+    instauto: "npm:^10.0.1"
     json5: "npm:^2.2.3"
     lodash: "npm:^4.17.23"
     mkdirp: "npm:^1.0.4"
