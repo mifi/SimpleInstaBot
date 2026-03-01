@@ -215,7 +215,7 @@ async function runBotNormalMode({
   async function sleepUntilNextDay() {
     const msUntilNextRun = getMsUntilNextRun();
     logger.log(`Sleeping ${msUntilNextRun / (60 * 60 * 1000)} hours (waiting until ${runAtHour}:00)...`);
-    await new Promise(resolve => setTimeout(resolve, msUntilNextRun));
+    await new Promise((resolve) => setTimeout(resolve, msUntilNextRun));
     logger.log('Done sleeping, running...');
   }
 
@@ -301,8 +301,8 @@ function createWindow() {
 
   if (isDev) {
     installExtension(REACT_DEVELOPER_TOOLS)
-      .then(name => console.log(`Added Extension: ${name}`))
-      .catch(err => console.log('An error occurred:', err));
+      .then((name) => console.log(`Added Extension: ${name}`))
+      .catch((err) => console.log('An error occurred:', err));
   }
 
   // Open the DevTools.

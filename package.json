@@ -22,7 +22,7 @@
     "icon-gen": "mkdirp icon-build && node scripts/iconGen.js",
     "build": "yarn icon-gen && electron-vite build",
     "test": "exit 0",
-    "lint": "eslint --ext .jsx --ext .js .",
+    "lint": "eslint --ext .jsx --ext .js --ext .cjs .",
     "check": "yarn lint && yarn test",
     "pack-mac": "yarn build && electron-builder --mac",
     "pack-win": "yarn build && electron-builder --win",

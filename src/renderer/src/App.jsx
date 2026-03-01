@@ -23,7 +23,7 @@ const { store: configStore, defaults: configDefaults } = electron.require('./sto
 
 const ReactSwal = withReactContent(Swal);
 
-const cleanupAccounts = (accounts) => accounts.map(user => user.replaceAll(/^@/g, ''));
+const cleanupAccounts = (accounts) => accounts.map((user) => user.replaceAll(/^@/g, ''));
 
 function safeSetConfig(key, val) {
   configStore.set(key, val !== undefined ? val : null);
@@ -206,13 +206,13 @@ const AdvancedSettings = memo(({
         <Checkbox
           label="Dry run - If checked, the bot will not perform any real actions (useful for testing)"
           checked={dryRun}
-          onChange={e => setDryRun(e.target.checked)}
+          onChange={(e) => setDryRun(e.target.checked)}
         />
 
         <Checkbox
           label="Start immediately - If unchecked, the bot will sleep until the hour 'runAtHour' when Start button is pressed"
           checked={instantStart}
-          onChange={e => setInstantStart(e.target.checked)}
+          onChange={(e) => setInstantStart(e.target.checked)}
         />
       </div>
 
@@ -309,7 +309,7 @@ const App = memo(() => {
   }));
 
   function setAdvancedSetting(key, value) {
-    setAdvancedSettings(s => ({ ...s, [key]: value }));
+    setAdvancedSettings((s) => ({ ...s, [key]: value }));
   }
 
   useEffect(() => safeSetConfig('userAgent', advancedSettings.userAgent), [advancedSettings.userAgent]);
@@ -599,7 +599,7 @@ const App = memo(() => {
                       <TextInputField
                         isInvalid={username.length === 0}
                         value={username}
-                        onChange={e => setUsername(e.target.value)}
+                        onChange={(e) => setUsername(e.target.value)}
                         label="Instagram username"
                         autoCapitalize="off"
                         autoCorrect="off"
@@ -609,7 +609,7 @@ const App = memo(() => {
                       <TextInputField
                         value={password}
                         isInvalid={password.length < 4}
-                        onChange={e => setPassword(e.target.value)}
+                        onChange={(e) => setPassword(e.target.value)}
                         type="password"
                         label="Password"
                         description="We do not store your password"
@@ -627,7 +627,7 @@ const App = memo(() => {
                     <Checkbox
                       label="Follow private accounts?"
                       checked={!skipPrivate}
-                      onChange={e => setSkipPrivate(!e.target.checked)}
+                      onChange={(e) => setSkipPrivate(!e.target.checked)}
                     />
                   </div>
 
@@ -635,7 +635,7 @@ const App = memo(() => {
                     <Checkbox
                       label="Also like a few photos after following users?"
                       checked={advancedSettings.maxLikesPerUser > 0}
-                      onChange={e => setAdvancedSetting('maxLikesPerUser', e.target.checked ? 2 : 0)}
+                      onChange={(e) => setAdvancedSetting('maxLikesPerUser', e.target.checked ? 2 : 0)}
                     />
                   </div>
                 </div>

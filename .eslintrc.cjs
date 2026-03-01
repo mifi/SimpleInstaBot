@@ -1,33 +1,14 @@
 module.exports = {
   extends: ['mifi'],
-  rules: {
-    'unicorn/prefer-global-this': 0,
-  },
   env: {
     browser: true, // puppeteer
   },
-    "rules": {
-    "no-await-in-loop": 0,
-    "react/prop-types": 0,
-    "react/forbid-prop-types": 0,
-    "arrow-parens": 0,
-    "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "warn",
-    "import/no-extraneous-dependencies": ["error", {
-      "devDependencies": true,
-      "optionalDependencies": false
+  rules: {
+    'import/no-extraneous-dependencies': ['error', {
+      devDependencies: true,
+      optionalDependencies: false,
     }],
-    "jsx-a11y/control-has-associated-label": 0,
-
-    "no-console": 0,
-    "object-curly-newline": 0,
-    "max-len": 0,
-    "react/jsx-one-expression-per-line": 0,
-    "react/no-multi-comp": 0,
-    "jsx-a11y/click-events-have-key-events": 0,
-    "jsx-a11y/accessible-emoji": 0,
-    "no-multiple-empty-lines": ["error", { "max": 2, "maxBOF": 0, "maxEOF": 0 }],
-    "no-promise-executor-return": 0,
-    "react/function-component-definition": 0
-  }
+    'no-console': 0,
+    'jsx-a11y/click-events-have-key-events': 0,
+  },
 };
