@@ -7,85 +7,73 @@
   "author": {
     "name": "Mikael Finstad",
     "email": "finstaden@gmail.com",
-    "url": "https://mifi.no"
+    "url": "https://mifi.no/"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/mifi/SimpleInstaBot.git"
   },
-  "main": "public/electron.js",
+  "main": "./out/main/index.js",
   "homepage": "./",
-  "dependencies": {
-    "@electron/remote": "^2.0.8",
-    "electron-is-dev": "^2.0.0",
-    "electron-store": "^5.1.1",
-    "filenamify": "^4.2.0",
-    "fs-extra": "^8.1.0",
-    "instauto": "^10.0.0",
-    "lodash": "^4.17.21",
-    "moment": "^2.29.4",
-    "puppeteer-core": "^24.37.5",
-    "puppeteer-in-electron": "^3.0.5",
-    "yargs-parser": "^21.0.1"
-  },
+  "type": "module",
   "scripts": {
-    "start:frontend": "BROWSER=none PORT=3001 react-scripts start",
-    "start:electron": "wait-on http://localhost:3001 && electron .",
-    "start": "concurrently -k \"npm run start:frontend\" \"npm run start:electron\"",
-    "icon-gen": "mkdirp icon-build && node scripts/icon-gen.mjs",
-    "build": "yarn icon-gen && react-scripts build",
+    "start": "electron-vite preview",
+    "dev": "electron-vite dev -w",
+    "icon-gen": "mkdirp icon-build && node scripts/icon-gen.js",
+    "build": "yarn icon-gen && electron-vite build",
     "test": "exit 0",
-    "eject": "react-scripts eject",
     "lint": "eslint --ext .jsx --ext .js .",
     "check": "yarn lint && yarn test",
-    "pack-mac": "electron-builder --mac",
-    "prepack-mac": "yarn build",
-    "pack-win": "electron-builder --win",
-    "prepack-win": "yarn build",
-    "pack-linux": "electron-builder --linux",
-    "prepack-linux": "yarn build",
+    "pack-mac": "yarn build && electron-builder --mac",
+    "pack-win": "yarn build && electron-builder --win",
+    "pack-linux": "yarn build && electron-builder --linux",
     "postinstall": "electron-builder install-app-deps"
   },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
-  "browserslist": {
-    "production": [
-      "electron 19.0"
-    ],
-    "development": [
-      "electron 19.0"
-    ]
+  "dependencies": {
+    "@electron/remote": "^2.1.3",
+    "electron-is-dev": "^3.0.1",
+    "electron-store": "^5.2.0",
+    "filenamify": "^4.3.0",
+    "fs-extra": "^8.1.0",
+    "instauto": "^10.0.0",
+    "lodash": "^4.17.23",
+    "moment": "^2.30.1",
+    "puppeteer-core": "^24.37.5",
+    "puppeteer-in-electron": "^3.0.5",
+    "yargs-parser": "^21.1.1"
   },
   "devDependencies": {
-    "concurrently": "^4.1.0",
-    "electron": "^19.1.8",
-    "electron-builder": "^23.1.0",
-    "electron-builder-notarize": "^1.5.0",
-    "electron-devtools-installer": "^3.2.0",
-    "eslint": "^7.32.0 || ^8.2.0",
-    "eslint-config-airbnb": "^19.0.4",
-    "eslint-plugin-import": "^2.25.3",
-    "eslint-plugin-jsx-a11y": "^6.5.1",
-    "eslint-plugin-react": "^7.28.0",
-    "eslint-plugin-react-hooks": "^4.3.0",
-    "evergreen-ui": "^6.10.3",
-    "json5": "^2.2.2",
+    "@typescript-eslint/eslint-plugin": "^8.56.1",
+    "@typescript-eslint/parser": "^8.56.1",
+    "@vitejs/plugin-react": "^5.1.4",
+    "electron": "38.8.4",
+    "electron-builder": "^26.8.1",
+    "electron-builder-notarize": "^1.5.2",
+    "electron-devtools-installer": "^4.0.0",
+    "electron-vite": "^5.0.0",
+    "eslint": "^8.57.1",
+    "eslint-config-mifi": "^0.1.0",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-unicorn": "56.0.1",
+    "evergreen-ui": "^6.13.3",
+    "json5": "^2.2.3",
     "mkdirp": "^1.0.4",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-icons": "^4.4.0",
-    "react-lottie-player": "^1.4.3",
-    "react-scripts": "5.0.1",
-    "sharp": "^0.30.7",
-    "sweetalert2": "^11.4.23",
-    "sweetalert2-react-content": "^5.0.1",
-    "wait-on": "^6.0.1"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-icons": "^4.12.0",
+    "react-lottie-player": "^1.5.6",
+    "sharp": "^0.34.5",
+    "sweetalert2": "^11.26.21",
+    "sweetalert2-react-content": "^5.1.1",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.1"
   },
   "build": {
     "files": [
-      "build/**/*",
-      "node_modules/instauto/**/*"
+      "out/**/*"
     ],
     "appId": "no.mifi.simpleinstabot",
     "artifactName": "${productName}-${os}.${ext}",

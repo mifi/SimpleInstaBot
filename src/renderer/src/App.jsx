@@ -16,8 +16,8 @@ const { isDev } = window;
 
 const electron = window.require('@electron/remote');
 
-const { initInstautoDb, initInstauto, runBotNormalMode, runBotUnfollowAllUnknown, runBotUnfollowNonMutualFollowers, runBotUnfollowOldFollowed, runBotUnfollowUserList, runBotFollowUserList, cleanupInstauto, checkHaveCookies, deleteCookies, getInstautoData, runTestCode } = electron.require('./electron');
-const { store: configStore, defaults: configDefaults } = electron.require('./store');
+const { initInstautoDb, initInstauto, runBotNormalMode, runBotUnfollowAllUnknown, runBotUnfollowNonMutualFollowers, runBotUnfollowOldFollowed, runBotUnfollowUserList, runBotFollowUserList, cleanupInstauto, checkHaveCookies, deleteCookies, getInstautoData, runTestCode } = electron.require('./index.js');
+const { store: configStore, defaults: configDefaults } = electron.require('./store.js');
 
 const ReactSwal = withReactContent(Swal);
 

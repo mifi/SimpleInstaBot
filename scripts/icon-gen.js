@@ -8,4 +8,4 @@ const svg2png = (from, to, width, height) => sharp(from)
   })
   .toFile(to);
 
-await svg2png('src/icon.svg', './icon-build/app-512.png', 512, 512);
+await svg2png('src/renderer/src/icon.svg', './icon-build/app-512.png', 512, 512);

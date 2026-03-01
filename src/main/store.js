@@ -1,6 +1,6 @@
-const Store = require('electron-store');
+import Store from 'electron-store';
 
-const defaults = {
+export const defaults = {
   skipPrivate: true,
   currentUsername: undefined,
   usersToFollowFollowersOf: ['@lostleblanc', '@samkolder', '@bomkanari'],
@@ -21,8 +21,6 @@ const defaults = {
   runAtHour: 10,
 };
 
-const store = new Store({
+export const store = new Store({
   defaults,
 });
-
-module.exports = { store, defaults };

@@ -1,16 +1,22 @@
-const { app, BrowserWindow, powerSaveBlocker } = require('electron'); // eslint-disable-line import/no-extraneous-dependencies
-const isDev = require('electron-is-dev');
-const path = require('path');
-const pie = require('puppeteer-in-electron');
-const puppeteer = require('puppeteer-core');
-const { join } = require('path');
-const assert = require('assert');
-const fs = require('fs-extra');
-const filenamify = require('filenamify');
-const yargsParser = require('yargs-parser');
+import { app, BrowserWindow, powerSaveBlocker } from 'electron'; // eslint-disable-line import/no-extraneous-dependencies
+import isDev from 'electron-is-dev';
+import * as path from 'path';
+import * as pie from 'puppeteer-in-electron';
+import puppeteer from 'puppeteer-core';
+import assert from 'assert';
+import fs from 'fs-extra';
+import filenamify from 'filenamify';
+import yargsParser from 'yargs-parser';
+import { fileURLToPath } from 'node:url';
 
-const moment = require('moment');
-const electronRemote = require('@electron/remote/main'); // todo migrate away from this
+import moment from 'moment';
+// eslint-disable-next-line import/extensions
+import electronRemote from '@electron/remote/main/index.js'; // todo migrate away from this
+import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer'; // devtools installer
+import Instauto, { JSONDB } from 'instauto';
+
+// eslint-disable-next-line import/extensions
+import * as store from './store.js';
 
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -21,8 +27,6 @@ let instautoDb;
 let instauto;
 let instautoWindow;
 let logger = console;
-
-let instautoModulePromise;
 
 let powerSaveBlockerId;
 
@@ -53,11 +57,11 @@ const { root: customRootPath } = args;
 if (customRootPath) {
   console.log('Using custom root', customRootPath);
   // must happen before 'ready' event
-  app.setPath('userData', join(customRootPath, 'electron'));
+  app.setPath('userData', path.join(customRootPath, 'electron'));
 }
 
 function getFilePath(rel) {
-  return join(customRootPath || app.getPath('userData'), rel);
+  return path.join(customRootPath || app.getPath('userData'), rel);
 }
 
 const cookiesPath = getFilePath('cookies.json');
@@ -75,8 +79,6 @@ async function deleteCookies() {
 }
 
 async function initInstautoDb(usernameIn) {
-  if (!instautoModulePromise) instautoModulePromise = import('instauto');
-  const { JSONDB } = await instautoModulePromise;
   const username = usernameIn && filenamify(usernameIn);
   const followedDbPath = getFilePath(username ? `${username}-followed.json` : 'followed.json');
   const unfollowedDbPath = getFilePath(username ? `${username}-unfollowed.json` : 'followed.json');
@@ -129,8 +131,6 @@ async function initInstauto({
   dryRun,
   logger: loggerArg,
 }) {
-  if (!instautoModulePromise) instautoModulePromise = import('instauto');
-  const { default: Instauto } = await instautoModulePromise;
   instautoWindow = new BrowserWindow({
     x: 0,
     y: 0,
@@ -284,7 +284,7 @@ function createWindow() {
     webPreferences: {
       contextIsolation: false, // todo
       nodeIntegration: true, // todo
-      preload: path.join(__dirname, 'preload.js'),
+      preload: fileURLToPath(new URL('../preload/index.cjs', import.meta.url)),
       // https://github.com/electron/electron/issues/5107
       webSecurity: !isDev,
       backgroundThrottling: false, // Attempt to fix https://github.com/mifi/SimpleInstaBot/issues/37
@@ -294,15 +294,10 @@ function createWindow() {
 
   electronRemote.enable(mainWindow.webContents);
 
-  const url = new URL(isDev ? 'http://localhost:3001' : `file://${path.join(__dirname, '../build/index.html')}`);
-
-  url.searchParams.append('data', JSON.stringify({ isDev }));
-
-  mainWindow.loadURL(url.toString());
+  if (isDev) mainWindow.loadURL('http://localhost:3001');
+  else mainWindow.loadFile('out/renderer/index.html', { query: { data: JSON.stringify({ isDev }) } });
 
   if (isDev) {
-    const { default: installExtension, REACT_DEVELOPER_TOOLS } = require('electron-devtools-installer'); // eslint-disable-line global-require,import/no-extraneous-dependencies
-
     installExtension(REACT_DEVELOPER_TOOLS)
       .then(name => console.log(`Added Extension: ${name}`))
       .catch(err => console.log('An error occurred: ', err));
@@ -338,7 +333,8 @@ app.on('activate', () => {
   }
 });
 
-module.exports = {
+// using @electron/remote
+const remoteApiLegacy = {
   initInstauto,
   initInstautoDb,
   getInstautoData,
@@ -353,3 +349,14 @@ module.exports = {
   checkHaveCookies,
   deleteCookies,
 };
+
+app.addListener('remote-require', (event, _webContents, moduleName) => {
+  if (moduleName === './index.js') {
+    // eslint-disable-next-line no-param-reassign
+    event.returnValue = remoteApiLegacy;
+  }
+  if (moduleName === './store.js') {
+    // eslint-disable-next-line no-param-reassign
+    event.returnValue = store;
+  }
+});
