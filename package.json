@@ -19,7 +19,7 @@
   "scripts": {
     "start": "electron-vite preview",
     "dev": "electron-vite dev -w",
-    "icon-gen": "mkdirp icon-build && node scripts/icon-gen.js",
+    "icon-gen": "mkdirp icon-build && node scripts/iconGen.js",
     "build": "yarn icon-gen && electron-vite build",
     "test": "exit 0",
     "lint": "eslint --ext .jsx --ext .js .",
