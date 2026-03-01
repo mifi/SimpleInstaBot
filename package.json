@@ -88,7 +88,6 @@
     ],
     "appId": "no.mifi.simpleinstabot",
     "artifactName": "${productName}-${os}.${ext}",
-    "afterSign": "electron-builder-notarize",
     "mac": {
       "hardenedRuntime": true,
       "target": "dmg",
