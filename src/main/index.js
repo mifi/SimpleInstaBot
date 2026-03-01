@@ -1,9 +1,9 @@
 import { app, BrowserWindow, powerSaveBlocker } from 'electron'; // eslint-disable-line import/no-extraneous-dependencies
 import isDev from 'electron-is-dev';
-import * as path from 'path';
+import * as path from 'node:path';
 import * as pie from 'puppeteer-in-electron';
 import puppeteer from 'puppeteer-core';
-import assert from 'assert';
+import assert from 'node:assert';
 import fs from 'fs-extra';
 import filenamify from 'filenamify';
 import yargsParser from 'yargs-parser';
@@ -32,11 +32,13 @@ let powerSaveBlockerId;
 
 // Must be called before electron is ready
 // NOTE: It will listen to a TCP port. could be an issue
+// eslint-disable-next-line unicorn/prefer-top-level-await
 const pieConnectPromise = (async () => {
   await pie.initialize(app);
   return pie.connect(app, puppeteer);
 })();
 
+// eslint-disable-next-line unicorn/prefer-top-level-await
 pieConnectPromise.catch(console.error);
 
 electronRemote.initialize();
@@ -86,9 +88,9 @@ async function initInstautoDb(usernameIn) {
 
   // Migrate any old paths if we have new version (with username) now:
   if (username) {
-    await fs.move(getFilePath('followed.json'), followedDbPath).catch(() => {});
-    await fs.move(getFilePath('unfollowed.json'), unfollowedDbPath).catch(() => {});
-    await fs.move(getFilePath('liked-photos.json'), likedPhotosDbPath).catch(() => {});
+    await fs.move(getFilePath('followed.json'), followedDbPath).catch();
+    await fs.move(getFilePath('unfollowed.json'), unfollowedDbPath).catch();
+    await fs.move(getFilePath('liked-photos.json'), likedPhotosDbPath).catch();
   }
 
   instautoDb = await JSONDB({
@@ -300,7 +302,7 @@ function createWindow() {
   if (isDev) {
     installExtension(REACT_DEVELOPER_TOOLS)
       .then(name => console.log(`Added Extension: ${name}`))
-      .catch(err => console.log('An error occurred: ', err));
+      .catch(err => console.log('An error occurred:', err));
   }
 
   // Open the DevTools.

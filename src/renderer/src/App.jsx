@@ -1,4 +1,4 @@
-import React, { memo, useState, useEffect, useRef, useCallback } from 'react';
+import { memo, useState, useEffect, useRef, useCallback } from 'react';
 import { Paragraph, ResetIcon, LogOutIcon, StopIcon, PlayIcon, SettingsIcon, ListIcon, IssueIcon, TickIcon, Dialog, Tooltip, IconButton, HelpIcon, Button, TextInputField, SideSheet, TagInput, Checkbox, Badge, Label, Textarea } from 'evergreen-ui';
 import Swal from 'sweetalert2';
 import moment from 'moment';
@@ -12,8 +12,10 @@ import robotLottie from './10178-c-bot.json';
 import robotDizzyLottie from './13680-robot-call.json';
 import loveLottie from './13682-heart.json';
 
+// eslint-disable-next-line unicorn/prefer-global-this
 const { isDev } = window;
 
+// eslint-disable-next-line unicorn/prefer-global-this
 const electron = window.require('@electron/remote');
 
 const { initInstautoDb, initInstauto, runBotNormalMode, runBotUnfollowAllUnknown, runBotUnfollowNonMutualFollowers, runBotUnfollowOldFollowed, runBotUnfollowUserList, runBotFollowUserList, cleanupInstauto, checkHaveCookies, deleteCookies, getInstautoData, runTestCode } = electron.require('./index.js');
@@ -21,7 +23,7 @@ const { store: configStore, defaults: configDefaults } = electron.require('./sto
 
 const ReactSwal = withReactContent(Swal);
 
-const cleanupAccounts = (accounts) => accounts.map(user => user.replace(/^@/g, ''));
+const cleanupAccounts = (accounts) => accounts.map(user => user.replaceAll(/^@/g, ''));
 
 function safeSetConfig(key, val) {
   configStore.set(key, val !== undefined ? val : null);
@@ -43,6 +45,7 @@ function onTroubleshootingClick() {
   });
 }
 
+// eslint-disable-next-line react/display-name
 const StatisticsBanner = memo(({ data: { numFollowedLastDay, numTotalFollowedUsers, numUnfollowedLastDay, numTotalUnfollowedUsers, numLikedLastDay, numTotalLikedPhotos } }) => {
   const headingStyle = { marginBottom: 5, color: '#7c3c21' };
   const statStyle = { minWidth: 30, paddingRight: 5, fontWeight: 400, fontSize: 24, color: '#303960' };
@@ -69,6 +72,7 @@ const StatisticsBanner = memo(({ data: { numFollowedLastDay, numTotalFollowedUse
   );
 });
 
+// eslint-disable-next-line react/display-name
 const AdvancedSettings = memo(({
   advancedSettings, onChange, dryRun, setDryRun, instantStart, setInstantStart, onClose,
 }) => {
@@ -218,6 +222,7 @@ const AdvancedSettings = memo(({
   );
 });
 
+// eslint-disable-next-line react/display-name
 const LogView = memo(({ logs, style, fontSize } = {}) => {
   const logViewRef = useRef();
   useEffect(() => {
@@ -237,7 +242,7 @@ const LogView = memo(({ logs, style, fontSize } = {}) => {
           <div key={i}>
             <span style={{ marginRight: 5, whiteSpace: 'pre-wrap', fontSize }}>{moment(time).format('LT')}</span>
             <span style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all', fontSize, color }}>
-              {args.map(arg => String(arg)).join(' ')}
+              {args.map(String).join(' ')}
             </span>
           </div>
         );
@@ -246,6 +251,7 @@ const LogView = memo(({ logs, style, fontSize } = {}) => {
   );
 });
 
+// eslint-disable-next-line react/display-name
 const AccountsList = memo(({ hasWarning, accounts, setAccounts, label, placeholder, tooltip }) => {
   const onChange = useCallback((newVal) => {
     // Some people try hashtags
@@ -283,6 +289,7 @@ const AccountsListDialog = ({ isShown, onCloseComplete, onConfirm, label }) => {
   );
 };
 
+// eslint-disable-next-line react/display-name
 const App = memo(() => {
   const [advancedSettings, setAdvancedSettings] = useState(() => ({
     userAgent: configStore.get('userAgent'),
@@ -409,12 +416,12 @@ const App = memo(() => {
       return;
     }
 
-    if (usersToFollowFollowersOf.length < 1) {
+    if (usersToFollowFollowersOf.length === 0) {
       await Swal.fire({ icon: 'error', text: 'Please add at least 1 account to the list!' });
       return;
     }
 
-    if (!isLoggedIn && (username.length < 1 || password.length < 1)) {
+    if (!isLoggedIn && (username.length === 0 || password.length === 0)) {
       await Swal.fire({ icon: 'error', text: 'Please enter your username and password' });
       return;
     }
@@ -590,7 +597,7 @@ const App = memo(() => {
                   ) : (
                     <div>
                       <TextInputField
-                        isInvalid={username.length < 1}
+                        isInvalid={username.length === 0}
                         value={username}
                         onChange={e => setUsername(e.target.value)}
                         label="Instagram username"

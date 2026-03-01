@@ -1,3 +1,4 @@
+// eslint-disable-next-line unicorn/prefer-global-this
 const preloadConfig = JSON.parse(new URL(window.location).searchParams.get('data'));
 
-window.isDev = preloadConfig.isDev;
+globalThis.isDev = preloadConfig.isDev;
