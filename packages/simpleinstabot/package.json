@@ -63,6 +63,12 @@
     ],
     "appId": "no.mifi.simpleinstabot",
     "artifactName": "${productName}-${os}.${ext}",
+    "publish": [
+      {
+        "provider": "github",
+        "tagNamePrefix": "SimpleInstaBot/v"
+      }
+    ],
     "mac": {
       "hardenedRuntime": true,
       "target": "dmg",
