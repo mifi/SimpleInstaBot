@@ -35,4 +35,3 @@ jobs:
       - run: yarn workspace instauto check
 
       - run: yarn workspace simpleinstabot build
-      - run: yarn workspace simpleinstabot check

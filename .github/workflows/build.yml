@@ -48,6 +48,7 @@ jobs:
       - run: yarn workspace simpleinstabot build
       - run: yarn workspace simpleinstabot electron-builder
         env:
+          GH_TOKEN: ${{ secrets.github_token }}
           # macOS notarization API key
           API_KEY_ID: ${{ secrets.api_key_id }}
           API_KEY_ISSUER_ID: ${{ secrets.api_key_issuer_id }}
