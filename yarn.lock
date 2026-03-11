@@ -1475,6 +1475,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tsconfig/node22@npm:^22.0.5":
+  version: 22.0.5
+  resolution: "@tsconfig/node22@npm:22.0.5"
+  checksum: 10c0/c64b1d51e1556da9212463799f5096289d2cc8561eaed10cd0a0a36c25790b4c6bed30c0f846afccf8da75b5750326fa281216a908c2b67ead7b55adaf3eda22
+  languageName: node
+  linkType: hard
+
+"@tsconfig/strictest@npm:^2.0.8":
+  version: 2.0.8
+  resolution: "@tsconfig/strictest@npm:2.0.8"
+  checksum: 10c0/96d7f1c6988c284886e7f2caea87415a6ebc779dc24c3f102cfa83b7d924da1363176b09c4600d11a1205bf2d819f35515c542a4bbcbe2fe13c1d7833376d203
+  languageName: node
+  linkType: hard
+
 "@types/async-retry@npm:^1.4.1":
   version: 1.4.4
   resolution: "@types/async-retry@npm:1.4.4"
@@ -1585,6 +1599,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/lodash@npm:^4.17.23":
+  version: 4.17.24
+  resolution: "@types/lodash@npm:4.17.24"
+  checksum: 10c0/b72f60d4daacdad1fa643edb3faba204c02a01eb1ac00a83ff73496a6d236fc55e459c06106e8ced42277dba932d087d8fc090f8de4ef590d3f91e6d6f7ce85a
+  languageName: node
+  linkType: hard
+
 "@types/ms@npm:*":
   version: 0.7.31
   resolution: "@types/ms@npm:0.7.31"
@@ -1608,6 +1629,15 @@ __metadata:
   dependencies:
     undici-types: "npm:~6.21.0"
   checksum: 10c0/ad8a0b6a69dd8ef663701573eca94ef6d20ce093f54f05bed823c826374eb1ea8b06e6f2c5d7f6cfc203b82dfd60293296bf80ea987ddb77775840bc2ef9f803
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:22":
+  version: 22.19.15
+  resolution: "@types/node@npm:22.19.15"
+  dependencies:
+    undici-types: "npm:~6.21.0"
+  checksum: 10c0/f17eaf3d0d1da5e93ad9e287efb78201f8a5282973c004c5f70d91675c5c6b926a23acaa7b158a42b3d7e27e36b349d65a531710c91c308fca53dd7fa280ef98
   languageName: node
   linkType: hard
 
@@ -1704,6 +1734,13 @@ __metadata:
   version: 0.16.2
   resolution: "@types/scheduler@npm:0.16.2"
   checksum: 10c0/89a3a922f03609b61c270d534226791edeedcb1b06f0225d5543ac17830254624ef9d8a97ad05418e4ce549dd545bddf1ff28cb90658ff10721ad14556ca68a5
+  languageName: node
+  linkType: hard
+
+"@types/user-agents@npm:^1.0.4":
+  version: 1.0.4
+  resolution: "@types/user-agents@npm:1.0.4"
+  checksum: 10c0/07f0ad3c4c742775ddcea6b6d7c06e7256318dd2ca7530785a61872964963bd918b61749c09183a20195d10bd7d8bd31fe031ca42e227e9cf25fd140b7ef525a
   languageName: node
   linkType: hard
 
@@ -1992,9 +2029,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"app-builder-lib@npm:26.8.1":
-  version: 26.8.1
-  resolution: "app-builder-lib@npm:26.8.1"
+"app-builder-lib@npm:26.8.2":
+  version: 26.8.2
+  resolution: "app-builder-lib@npm:26.8.2"
   dependencies:
     "@develar/schema-utils": "npm:~2.6.5"
     "@electron/asar": "npm:3.4.1"
@@ -2033,9 +2070,9 @@ __metadata:
     tiny-async-pool: "npm:1.3.0"
     which: "npm:^5.0.0"
   peerDependencies:
-    dmg-builder: 26.8.1
-    electron-builder-squirrel-windows: 26.8.1
-  checksum: 10c0/06e2c12bf3f65ed707a5eef6f711b738c19cc62d63ea52260ddd943b9ac882ea8bc37989bca189c9f0782fdd963c1240df84ae249e9403ac7d8c2279667c2ab2
+    dmg-builder: 26.8.2
+    electron-builder-squirrel-windows: 26.8.2
+  checksum: 10c0/f3cdb2e1a2f5cdb37231cc721fd9ec2172448bd6339f32a95188993673d08b50300a1b9e4f7fb410aa840c8ff4d3505a6684100a180a31293f4a0ff55f861552
   languageName: node
   linkType: hard
 
@@ -2892,6 +2929,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cosmiconfig@npm:^9.0.0":
+  version: 9.0.1
+  resolution: "cosmiconfig@npm:9.0.1"
+  dependencies:
+    env-paths: "npm:^2.2.1"
+    import-fresh: "npm:^3.3.0"
+    js-yaml: "npm:^4.1.0"
+    parse-json: "npm:^5.2.0"
+  peerDependencies:
+    typescript: ">=4.9.5"
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: 10c0/a5d4d95599687532ee072bca60170133c24d4e08cd795529e0f22c6ce5fde9409eaf4f26e36e3d671f43270ef858fc68f3c7b0ec28e58fac7ddebda5b7725306
+  languageName: node
+  linkType: hard
+
 "crc@npm:^3.8.0":
   version: 3.8.0
   resolution: "crc@npm:3.8.0"
@@ -3099,6 +3153,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"devtools-protocol@npm:0.0.1581282":
+  version: 0.0.1581282
+  resolution: "devtools-protocol@npm:0.0.1581282"
+  checksum: 10c0/8df3b3bccaa8e5ac8915c29bb6ebece350ca8781ec7689bec90dfa6a479682a1b389abd964fe7dc7610d91c96850311aa614c4414b478bee70cabd3cf154ac93
+  languageName: node
+  linkType: hard
+
 "dir-compare@npm:^4.2.0":
   version: 4.2.0
   resolution: "dir-compare@npm:4.2.0"
@@ -3109,11 +3170,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dmg-builder@npm:26.8.1":
-  version: 26.8.1
-  resolution: "dmg-builder@npm:26.8.1"
+"dmg-builder@npm:26.8.2":
+  version: 26.8.2
+  resolution: "dmg-builder@npm:26.8.2"
   dependencies:
-    app-builder-lib: "npm:26.8.1"
+    app-builder-lib: "npm:26.8.2"
     builder-util: "npm:26.8.1"
     dmg-license: "npm:^1.0.11"
     fs-extra: "npm:^10.1.0"
@@ -3122,7 +3183,7 @@ __metadata:
   dependenciesMeta:
     dmg-license:
       optional: true
-  checksum: 10c0/640090e95b5886cbf3d332313f816be4d60bd9f3c02e0f7516afaca7e5b3ed8f028b34af7a85f505fa8b7009fe1024affc7fa2cf241c5f93bfc6233005af9818
+  checksum: 10c0/a383e2f64a396e620e23a6dd4a9f90f6eff6ae6aacb22ce396767dfa3b04c8408da2ed641387b2a9a24112a9f581635fddd4693c13842a9b24f4162b6b59891a
   languageName: node
   linkType: hard
 
@@ -3197,6 +3258,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"dotenv@npm:^17.2.3":
+  version: 17.3.1
+  resolution: "dotenv@npm:17.3.1"
+  checksum: 10c0/c78e0c2d5a549c751e544cc60e2b95e7cb67e0c551f42e094d161c6b297aa44b630a3c2dcacf5569e529a6c2a6b84e2ab9be8d37b299d425df5a18b81ce4a35f
+  languageName: node
+  linkType: hard
+
 "dotenv@npm:^8.2.0":
   version: 8.6.0
   resolution: "dotenv@npm:8.6.0"
@@ -3261,16 +3329,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron-builder@npm:^26.8.1":
-  version: 26.8.1
-  resolution: "electron-builder@npm:26.8.1"
+"electron-builder@npm:^26.8.2":
+  version: 26.8.2
+  resolution: "electron-builder@npm:26.8.2"
   dependencies:
-    app-builder-lib: "npm:26.8.1"
+    app-builder-lib: "npm:26.8.2"
     builder-util: "npm:26.8.1"
     builder-util-runtime: "npm:9.5.1"
     chalk: "npm:^4.1.2"
     ci-info: "npm:^4.2.0"
-    dmg-builder: "npm:26.8.1"
+    dmg-builder: "npm:26.8.2"
     fs-extra: "npm:^10.1.0"
     lazy-val: "npm:^1.0.5"
     simple-update-notifier: "npm:2.0.0"
@@ -3278,7 +3346,7 @@ __metadata:
   bin:
     electron-builder: cli.js
     install-app-deps: install-app-deps.js
-  checksum: 10c0/658fe1e40fc41bec460b6fdd59a5a45367a43b778c1943d473ca0e2264f64680051bfef660e99257f13dd5625bb896b31fda5296a56f151d132b57f9cc27db7d
+  checksum: 10c0/12d4e3f051679f805ef5fd8f883722c69b9b40060d1c1ea30a02f146662346c3d09b9c011bfcae9446ed2abac81da94f7316c9ed02feef9ea2e80a610fe53f13
   languageName: node
   linkType: hard
 
@@ -3408,7 +3476,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"env-paths@npm:^2.2.0":
+"env-paths@npm:^2.2.0, env-paths@npm:^2.2.1":
   version: 2.2.1
   resolution: "env-paths@npm:2.2.1"
   checksum: 10c0/285325677bf00e30845e330eec32894f5105529db97496ee3f598478e50f008c5352a41a30e5e72ec9de8a542b5a570b85699cd63bd2bc646dbcb9f311d83bc4
@@ -4934,6 +5002,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"import-fresh@npm:^3.3.0":
+  version: 3.3.1
+  resolution: "import-fresh@npm:3.3.1"
+  dependencies:
+    parent-module: "npm:^1.0.0"
+    resolve-from: "npm:^4.0.0"
+  checksum: 10c0/bf8cc494872fef783249709385ae883b447e3eb09db0ebd15dcead7d9afe7224dad7bd7591c6b73b0b19b3c0f9640eb8ee884f01cfaf2887ab995b0b36a0cbec
+  languageName: node
+  linkType: hard
+
 "imurmurhash@npm:^0.1.4":
   version: 0.1.4
   resolution: "imurmurhash@npm:0.1.4"
@@ -4984,15 +5062,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"instauto@npm:^10.0.1":
-  version: 10.0.1
-  resolution: "instauto@npm:10.0.1"
+"instauto@workspace:^, instauto@workspace:packages/instauto":
+  version: 0.0.0-use.local
+  resolution: "instauto@workspace:packages/instauto"
   dependencies:
+    "@tsconfig/node22": "npm:^22.0.5"
+    "@tsconfig/strictest": "npm:^2.0.8"
+    "@types/lodash": "npm:^4.17.23"
+    "@types/node": "npm:22"
+    "@types/user-agents": "npm:^1.0.4"
+    dotenv: "npm:^17.2.3"
     lodash: "npm:^4.17.23"
+    puppeteer: "npm:^24.36.1"
+    typescript: "npm:~5.9.3"
     user-agents: "npm:^1.1.669"
-  checksum: 10c0/13da33a8f8221f849f2162c018637ab36b6cb781fe624f86ce91a4c2c25d02122cf19a301f5337bf1750e76a56f3a5bf833f72ab9dd3cb312db1da2e5cb14f33
-  languageName: node
-  linkType: hard
+  languageName: unknown
+  linkType: soft
 
 "internal-slot@npm:^1.1.0":
   version: 1.1.0
@@ -6536,7 +6621,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"parse-json@npm:^5.0.0":
+"parse-json@npm:^5.0.0, parse-json@npm:^5.2.0":
   version: 5.2.0
   resolution: "parse-json@npm:5.2.0"
   dependencies:
@@ -6792,6 +6877,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"puppeteer-core@npm:24.39.0":
+  version: 24.39.0
+  resolution: "puppeteer-core@npm:24.39.0"
+  dependencies:
+    "@puppeteer/browsers": "npm:2.13.0"
+    chromium-bidi: "npm:14.0.0"
+    debug: "npm:^4.4.3"
+    devtools-protocol: "npm:0.0.1581282"
+    typed-query-selector: "npm:^2.12.1"
+    webdriver-bidi-protocol: "npm:0.4.1"
+    ws: "npm:^8.19.0"
+  checksum: 10c0/03c32a87da832c455dced8fdb491e17e145be5a5962839835ecd19ed98fab3d00b425929b207744c35253a69b2abc55cbe908a6ed6371f86f0d52763b2830773
+  languageName: node
+  linkType: hard
+
 "puppeteer-core@npm:^24.37.5":
   version: 24.37.5
   resolution: "puppeteer-core@npm:24.37.5"
@@ -6819,6 +6919,22 @@ __metadata:
     get-port: "npm:^5.1.1"
     uuid: "npm:^8.3.2"
   checksum: 10c0/d819f04712cef44ddb727f8c7ff2e75b9c42f39647d5008c828008d474cbc1ad5d596ace79f54620c1f22ef9e7763663b73c28107d73e4daf0fbb2ee447c50b2
+  languageName: node
+  linkType: hard
+
+"puppeteer@npm:^24.36.1":
+  version: 24.39.0
+  resolution: "puppeteer@npm:24.39.0"
+  dependencies:
+    "@puppeteer/browsers": "npm:2.13.0"
+    chromium-bidi: "npm:14.0.0"
+    cosmiconfig: "npm:^9.0.0"
+    devtools-protocol: "npm:0.0.1581282"
+    puppeteer-core: "npm:24.39.0"
+    typed-query-selector: "npm:^2.12.1"
+  bin:
+    puppeteer: lib/cjs/puppeteer/node/cli.js
+  checksum: 10c0/ff65c34a38e2c69c34a0ab1e3f13dd0556ce238accb9cd794a1313ce987e94f9f212f83bce81ee0139316bf7028cfe25ecdeec41d5098651d5104b601edcb3ae
   languageName: node
   linkType: hard
 
@@ -7629,21 +7745,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"simpleinstabot@workspace:.":
+"simpleinstabot-monorepo@workspace:.":
   version: 0.0.0-use.local
-  resolution: "simpleinstabot@workspace:."
+  resolution: "simpleinstabot-monorepo@workspace:."
   dependencies:
-    "@electron/remote": "npm:^2.1.3"
     "@typescript-eslint/eslint-plugin": "npm:^8.56.1"
     "@typescript-eslint/parser": "npm:^8.56.1"
-    "@vitejs/plugin-react": "npm:^5.1.4"
-    electron: "npm:38.8.4"
-    electron-builder: "npm:^26.8.1"
-    electron-builder-notarize: "npm:^1.5.2"
-    electron-devtools-installer: "npm:^4.0.0"
-    electron-is-dev: "npm:^3.0.1"
-    electron-store: "npm:^5.2.0"
-    electron-vite: "npm:^5.0.0"
     eslint: "npm:^8.57.1"
     eslint-config-mifi: "npm:^0.1.0"
     eslint-plugin-import: "npm:^2.32.0"
@@ -7651,10 +7758,26 @@ __metadata:
     eslint-plugin-react: "npm:^7.37.5"
     eslint-plugin-react-hooks: "npm:^7.0.1"
     eslint-plugin-unicorn: "npm:56.0.1"
+  languageName: unknown
+  linkType: soft
+
+"simpleinstabot@workspace:packages/simpleinstabot":
+  version: 0.0.0-use.local
+  resolution: "simpleinstabot@workspace:packages/simpleinstabot"
+  dependencies:
+    "@electron/remote": "npm:^2.1.3"
+    "@vitejs/plugin-react": "npm:^5.1.4"
+    electron: "npm:38.8.4"
+    electron-builder: "npm:^26.8.2"
+    electron-builder-notarize: "npm:^1.5.2"
+    electron-devtools-installer: "npm:^4.0.0"
+    electron-is-dev: "npm:^3.0.1"
+    electron-store: "npm:^5.2.0"
+    electron-vite: "npm:^5.0.0"
     evergreen-ui: "npm:^6.13.3"
     filenamify: "npm:^4.3.0"
     fs-extra: "npm:^8.1.0"
-    instauto: "npm:^10.0.1"
+    instauto: "workspace:^"
     json5: "npm:^2.2.3"
     lodash: "npm:^4.17.23"
     mkdirp: "npm:^1.0.4"
@@ -8315,7 +8438,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typed-query-selector@npm:^2.12.0":
+"typed-query-selector@npm:^2.12.0, typed-query-selector@npm:^2.12.1":
   version: 2.12.1
   resolution: "typed-query-selector@npm:2.12.1"
   checksum: 10c0/2c81c8560910d87f98a64e1c0b03247a7c94c3703d11f2f048553718c18da8dcab8469be76a39d2d258f0ff5a9b0bf419394d8b1c804fdf72a06181a0631d70d

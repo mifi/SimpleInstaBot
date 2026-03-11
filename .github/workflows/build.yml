@@ -3,15 +3,16 @@ name: Build/release
 on:
   push:
     tags:
-      - 'v*'
+      - 'SimpleInstaBot/v*'
+      - 'instauto/v*'
   workflow_dispatch:
   schedule:
     - cron: '0 10 * * *'
 
-
 jobs:
   release:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
 
     strategy:
       matrix:
@@ -44,13 +45,15 @@ jobs:
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
         with:
+          package_root: packages/simpleinstabot
+
           # GitHub token, automatically provided to the action
           # (No need to define this secret in the repo settings)
           github_token: ${{ secrets.github_token }}
 
-          # If the commit is tagged with a version (e.g. "v1.0.0"),
+          # If the commit is tagged with a version
           # release the app after building
-          release: ${{ startsWith(github.ref, 'refs/tags/v') }}
+          release: ${{ startsWith(github.ref, 'refs/tags/SimpleInstaBot/v') }}
         env:
           # macOS notarization API key
           API_KEY_ID: ${{ secrets.api_key_id }}

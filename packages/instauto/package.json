@@ -1,0 +1,50 @@
+{
+  "name": "instauto",
+  "version": "10.0.1",
+  "description": "Instagram automation library written in Node.js",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "exit 0",
+    "check": "tsc && yarn test",
+    "watch": "yarn build -w",
+    "build": "tsc -p tsconfig.build.json",
+    "prepare": "yarn build"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Mikael Finstad",
+    "email": "mikael@mifi.no",
+    "url": "https://mifi.no/"
+  },
+  "repository": "mifi/SimpleInstaBot",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "lodash": "^4.17.23",
+    "user-agents": "^1.1.669"
+  },
+  "devDependencies": {
+    "@tsconfig/node22": "^22.0.5",
+    "@tsconfig/strictest": "^2.0.8",
+    "@types/lodash": "^4.17.23",
+    "@types/node": "22",
+    "@types/user-agents": "^1.0.4",
+    "dotenv": "^17.2.3",
+    "puppeteer": "^24.36.1",
+    "typescript": "~5.9.3"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js"
+    }
+  }
+}

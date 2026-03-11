@@ -1,12 +1,20 @@
-name: Tests
+name: Test
 
 on: [push, pull_request]
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
 
     steps:
+      # Windows fix. See https://github.com/actions/checkout/issues/226
+      - run: git config --global core.autocrlf false
+
       - uses: actions/checkout@v6
 
       # todo remove once fixed https://github.com/actions/setup-node/issues/531
@@ -21,6 +29,10 @@ jobs:
           cache: 'yarn'
 
       - run: yarn install --immutable
-      - run: yarn build
-      - run: yarn check
       - run: yarn dedupe --check
+
+      - run: yarn workspace instauto build
+      - run: yarn workspace instauto check
+
+      - run: yarn workspace simpleinstabot build
+      - run: yarn workspace simpleinstabot check

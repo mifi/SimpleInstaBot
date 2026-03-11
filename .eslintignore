@@ -1,3 +1,5 @@
-/dist
-/build
-/out
+/packages/simpleinstabot/dist
+/packages/simpleinstabot/build
+/packages/simpleinstabot/out
+
+/packages/instauto/dist

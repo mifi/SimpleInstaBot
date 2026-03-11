@@ -1,0 +1,99 @@
+{
+  "name": "simpleinstabot",
+  "productName": "SimpleInstaBot",
+  "description": "Simple Instagram bot",
+  "version": "1.11.8",
+  "license": "MIT",
+  "author": {
+    "name": "Mikael Finstad",
+    "email": "mikael@mifi.no",
+    "url": "https://mifi.no/"
+  },
+  "repository": "mifi/SimpleInstaBot",
+  "main": "./out/main/index.js",
+  "homepage": "./",
+  "type": "module",
+  "scripts": {
+    "start": "electron-vite preview",
+    "dev": "electron-vite dev -w",
+    "icon-gen": "mkdirp icon-build && node scripts/iconGen.js",
+    "build": "yarn icon-gen && electron-vite build",
+    "test": "exit 0",
+    "pack-mac": "yarn build && electron-builder --mac",
+    "pack-win": "yarn build && electron-builder --win",
+    "pack-linux": "yarn build && electron-builder --linux",
+    "version": "mkdir -p .git && npm version --workspaces-update=false --tag-version-prefix='SimpleInstaBot/v'"
+  },
+  "dependencies": {
+    "@electron/remote": "^2.1.3",
+    "electron-is-dev": "^3.0.1",
+    "electron-store": "^5.2.0",
+    "filenamify": "^4.3.0",
+    "fs-extra": "^8.1.0",
+    "instauto": "workspace:^",
+    "lodash": "^4.17.23",
+    "moment": "^2.30.1",
+    "puppeteer-core": "^24.37.5",
+    "puppeteer-in-electron": "^3.0.5",
+    "yargs-parser": "^21.1.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.1.4",
+    "electron": "38.8.4",
+    "electron-builder": "^26.8.2",
+    "electron-builder-notarize": "^1.5.2",
+    "electron-devtools-installer": "^4.0.0",
+    "electron-vite": "^5.0.0",
+    "evergreen-ui": "^6.13.3",
+    "json5": "^2.2.3",
+    "mkdirp": "^1.0.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-icons": "^4.12.0",
+    "react-lottie-player": "^1.5.6",
+    "sharp": "^0.34.5",
+    "sweetalert2": "^11.26.21",
+    "sweetalert2-react-content": "^5.1.1",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.1"
+  },
+  "build": {
+    "files": [
+      "out/**/*"
+    ],
+    "appId": "no.mifi.simpleinstabot",
+    "artifactName": "${productName}-${os}.${ext}",
+    "mac": {
+      "hardenedRuntime": true,
+      "target": "dmg",
+      "icon": "icon-build/app-512.png"
+    },
+    "win": {
+      "target": "portable",
+      "icon": "icon-build/app-512.png"
+    },
+    "linux": {
+      "artifactName": "${productName}-${os}-${arch}.${ext}",
+      "icon": "icon-build/app-512.png",
+      "target": [
+        {
+          "arch": "x64",
+          "target": "AppImage"
+        },
+        {
+          "arch": "x64",
+          "target": "tar.bz2"
+        },
+        {
+          "arch": "armv7l",
+          "target": "tar.bz2"
+        },
+        {
+          "arch": "arm64",
+          "target": "tar.bz2"
+        }
+      ]
+    }
+  },
+  "packageManager": "yarn@4.12.0"
+}

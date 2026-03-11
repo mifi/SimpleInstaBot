@@ -70,7 +70,7 @@ To run the bot on multiple accounts at the same time, run it with the command li
 
 ## API / programmatic bot
 
-SimpleInstaBot is built on [instauto](https://github.com/mifi/instauto) - you can instead use that if you want to program your own headless bot.
+SimpleInstaBot is built on [instauto](./packages/instauto/README.md) - you can instead use that if you want to program your own headless bot.
 
 ## How to run on Raspberry PI
 
@@ -117,18 +117,14 @@ Animations by:
 Icons made by [Freepik](https://www.flaticon.com/authors/freepik) from [www.flaticon.com](https://www.flaticon.com/)
 
 ## See also
-- https://github.com/mifi/instauto - Programmatic Instagram bot API
+- [instauto](./packages/instauto/README.md) - Programmatic Instagram bot API
 - https://instagrambot.github.io/
 - https://socialmanager.tools/
 - https://gramup.me/
 
-## Releasing
+## Contributing
 
-```bash
-npm version patch
-git push --follow-tags
-```
-Wait for github actions and go to https://github.com/mifi/SimpleInstaBot/releases
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ---
 
