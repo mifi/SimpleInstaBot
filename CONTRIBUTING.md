@@ -11,7 +11,7 @@ yarn workspace simpleinstabot dev
 ## Releasing SimpleInstaBot
 
 ```bash
-npm version patch
+yarn workspace simpleinstabot run version patch
 git push --follow-tags
 ```
 Wait for github actions and go to https://github.com/mifi/SimpleInstaBot/releases
@@ -19,5 +19,6 @@ Wait for github actions and go to https://github.com/mifi/SimpleInstaBot/release
 ## Releasing `instauto`
 
 ```bash
-npm version
+yarn workspace instauto run version patch
+yarn workspace instauto exec yarn npm publish
 ```

@@ -35,6 +35,9 @@ jobs:
           node-version: 22
           cache: 'yarn'
 
+      - run: yarn install --immutable
+      - run: yarn workspace instauto build
+
       - name: Prepare for app notarization
         if: startsWith(matrix.os, 'macos')
         # Import Apple API key for app notarization on macOS

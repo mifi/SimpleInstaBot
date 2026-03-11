@@ -10,7 +10,8 @@
     "check": "tsc && yarn test",
     "watch": "yarn build -w",
     "build": "tsc -p tsconfig.build.json",
-    "prepare": "yarn build"
+    "prepare": "yarn build",
+    "version": "mkdir -p .git && npm version --workspaces-update=false --tag-version-prefix='instauto/v'"
   },
   "files": [
     "dist"
