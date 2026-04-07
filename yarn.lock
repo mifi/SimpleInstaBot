@@ -3415,16 +3415,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron@npm:38.8.4":
-  version: 38.8.4
-  resolution: "electron@npm:38.8.4"
+"electron@npm:39.8.5":
+  version: 39.8.5
+  resolution: "electron@npm:39.8.5"
   dependencies:
     "@electron/get": "npm:^2.0.0"
     "@types/node": "npm:^22.7.7"
     extract-zip: "npm:^2.0.1"
   bin:
     electron: cli.js
-  checksum: 10c0/6ee2291c8361f205d71e343916d6879149dab9e3985a3f539bf116f5513274f21f416f909343c761bb0e0d9b95205daadde8dea3fc72dc53ffad61abf183e719
+  checksum: 10c0/21448e3d69a5e96912ce84533d39e7258be17879502cfed30bcdd6581b61516a1d1f3b492aad20344367967229bce27018625047f7ee6801257df93bf6b96d97
   languageName: node
   linkType: hard
 
@@ -7726,7 +7726,7 @@ __metadata:
   dependencies:
     "@electron/remote": "npm:^2.1.3"
     "@vitejs/plugin-react": "npm:^5.1.4"
-    electron: "npm:38.8.4"
+    electron: "npm:39.8.5"
     electron-builder: "npm:^26.8.2"
     electron-builder-notarize: "npm:^1.5.2"
     electron-devtools-installer: "npm:^4.0.0"
