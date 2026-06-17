@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^5.1.4",
-    "electron": "38.8.4",
+    "electron": "39.8.5",
     "electron-builder": "^26.8.2",
     "electron-builder-notarize": "^1.5.2",
     "electron-devtools-installer": "^4.0.0",
