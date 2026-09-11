@@ -538,7 +538,13 @@ function Instauto(db: JSONDBInstance, page: Page, options: InstautoOptions): Ins
         logger.log('Unable to intercept request, will send manually');
         try {
           await page.evaluate(async (username2: string) => {
-            const response = await window.fetch(`https://i.instagram.com/api/v1/users/web_profile_info/?username=${encodeURIComponent(username2.toLowerCase())}`, { mode: 'cors', credentials: 'include', headers: { 'x-ig-app-id': '936619743392459' } });
+            // NOTE: i.instagram.com is the legacy host and now returns an HTML page instead of JSON
+            // https://github.com/mifi/SimpleInstaBot/issues/324
+            const response = await window.fetch(`https://www.instagram.com/api/v1/users/web_profile_info/?username=${encodeURIComponent(username2.toLowerCase())}`, { mode: 'cors', credentials: 'include', headers: { 'x-ig-app-id': '936619743392459' } });
+            const contentType = response.headers.get('content-type') ?? '';
+            if (!response.ok || !contentType.includes('json')) {
+              throw new Error(`web_profile_info responded with status ${response.status} (${contentType || 'unknown content type'})`);
+            }
             await response.json(); // else it will not finish the request
           }, username);
           // todo `https://i.instagram.com/api/v1/users/${userId}/info/`
@@ -552,12 +558,17 @@ function Instauto(db: JSONDBInstance, page: Page, options: InstautoOptions): Ins
         const [foundResponse] = await Promise.all([
           page.waitForResponse((response) => {
             const request = response.request();
-            return request.method() === 'GET' && new RegExp(`https:\\/\\/i\\.instagram\\.com\\/api\\/v1\\/users\\/web_profile_info\\/\\?username=${encodeURIComponent(username.toLowerCase())}`).test(request.url());
+            return request.method() === 'GET' && new RegExp(`https:\\/\\/(www|i)\\.instagram\\.com\\/api\\/v1\\/users\\/web_profile_info\\/\\?username=${encodeURIComponent(username.toLowerCase())}`).test(request.url());
           }, { timeout: 30000 }),
           navigateToUserWithCheck(username),
           // page.waitForNavigation({ waitUntil: 'networkidle0' }),
         ]);
 
+        const contentType = foundResponse.headers()['content-type'] ?? '';
+        if (!foundResponse.ok() || !contentType.includes('json')) {
+          // e.g. 429 (rate limited) or a login/challenge HTML page
+          throw new Error(`web_profile_info responded with status ${foundResponse.status()} (${contentType || 'unknown content type'})`);
+        }
         const jsonText = await foundResponse.text();
         const jsonParsed: unknown = JSON.parse(jsonText);
         if (!isRecord(jsonParsed)) return undefined;
