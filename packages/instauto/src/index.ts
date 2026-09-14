@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import UserAgent from 'user-agents';
 import type { ElementHandle, Page, WaitForSelectorOptions } from 'puppeteer';
 import { type FollowedUser, type JSONDBInstance } from './db.ts'; // eslint-disable-line import/extensions
-import { type InstagramUser, isRecord, findUserInJson, parseJsonChunks } from './userData.ts'; // eslint-disable-line import/extensions
+import { type InstagramUser, isRecord, findUserInJson, parseJsonChunks, getGraphqlFriendlyName } from './userData.ts'; // eslint-disable-line import/extensions
 
 
 type Logger = Pick<Console, 'log' | 'info' | 'debug' | 'error' | 'trace' | 'warn'>;
@@ -239,20 +239,39 @@ function Instauto(db: JSONDBInstance, page: Page, options: InstautoOptions): Ins
   // Profile data captured from GraphQL responses made by Instagram's own web client, keyed by lowercase username
   const interceptedUsers: Record<string, InstagramUser> = {};
 
+  // Recent GraphQL responses, for diagnostics when we fail to find user data
+  interface GraphqlResponseInfo { friendlyName: string | undefined, status: number, contentType: string, username: string | undefined, error?: string }
+  const recentGraphqlResponses: GraphqlResponseInfo[] = [];
+
   page.on('response', (response) => {
     (async () => {
+      const url = response.url();
+      if (!/\/graphql\/query|\/api\/graphql|\/web_profile_info\//.test(url)) return;
+
+      const request = response.request();
+      const info: GraphqlResponseInfo = {
+        friendlyName: getGraphqlFriendlyName(request.headers(), request.postData()),
+        status: response.status(),
+        // NOTE: Instagram responds with text/javascript, not application/json
+        contentType: response.headers()['content-type'] ?? '',
+        username: undefined,
+      };
+      recentGraphqlResponses.push(info);
+      if (recentGraphqlResponses.length > 30) recentGraphqlResponses.shift();
+
       try {
-        if (!/\/graphql\/query|\/api\/graphql|\/web_profile_info\//.test(response.url())) return;
         if (!response.ok()) return;
-        const contentType = response.headers()['content-type'] ?? '';
-        if (!contentType.includes('json')) return;
         const text = await response.text();
         for (const json of parseJsonChunks(text)) {
           const user = findUserInJson(json);
-          if (user?.username) interceptedUsers[user.username.toLowerCase()] = user;
+          if (user?.username) {
+            interceptedUsers[user.username.toLowerCase()] = user;
+            info.username = user.username;
+          }
         }
-      } catch {
-        // response body may no longer be available (e.g. after navigation) - ignore
+      } catch (err) {
+        // response body may no longer be available (e.g. after navigation)
+        info.error = err instanceof Error ? err.message : String(err);
       }
     })();
   });
@@ -480,13 +499,18 @@ function Instauto(db: JSONDBInstance, page: Page, options: InstautoOptions): Ins
       return cachedUserData;
     }
 
+    let numPageScripts = 0;
+    let numPageScriptsWithUserData = 0;
+
     async function getUserDataFromPage(): Promise<InstagramUser | undefined> {
       // Instagram embeds the (relay) preloaded GraphQL profile data in <script type="application/json"> tags
       // https://github.com/mifi/instauto/issues/115#issuecomment-1199335650
       try {
         const scripts = await page.$$eval('script[type="application/json"]', (elements) => elements.map((element) => element.textContent ?? ''));
+        numPageScripts = scripts.length;
         for (const script of scripts) {
-          if (!script.includes('"user"')) continue;
+          if (!script.includes('follower_count') && !script.includes('edge_followed_by')) continue;
+          numPageScriptsWithUserData += 1;
           let parsed: unknown;
           try {
             parsed = JSON.parse(script);
@@ -498,7 +522,7 @@ function Instauto(db: JSONDBInstance, page: Page, options: InstautoOptions): Ins
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Unknown error';
-        logger.warn(`Unable to get user data from page (${message}) - This is normal`);
+        logger.warn(`Unable to get user data from page (${message})`);
       }
       return undefined;
     }
@@ -562,6 +586,8 @@ function Instauto(db: JSONDBInstance, page: Page, options: InstautoOptions): Ins
       }
     }
 
+    const numGraphqlResponsesBefore = recentGraphqlResponses.length;
+
     logger.log('Trying to get user data from HTML');
 
     await navigateToUserWithCheck(username);
@@ -578,10 +604,19 @@ function Instauto(db: JSONDBInstance, page: Page, options: InstautoOptions): Ins
       return userData;
     }
 
+    // Log diagnostics so that bug reports show where it fails
+    const graphqlSummary = recentGraphqlResponses.slice(Math.max(0, numGraphqlResponsesBefore - 5)).map(({ friendlyName, status, contentType, username: foundUsername, error }) => `${friendlyName ?? 'unknown'} (${status}, ${contentType || 'no content type'}${foundUsername ? `, user: ${foundUsername}` : ''}${error ? `, error: ${error}` : ''})`).join(', ');
+    logger.warn(`Could not find user data for ${username} - page JSON scripts: ${numPageScripts} (with profile data: ${numPageScriptsWithUserData}), GraphQL responses: ${graphqlSummary || 'none'}`);
+
     logger.log('Need to intercept network request to get user data');
 
     // last resort - this endpoint is often blocked (429) nowadays
-    userData = await getUserDataFromInterceptedRequest();
+    try {
+      userData = await getUserDataFromInterceptedRequest();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      throw new Error(`Could not get user data for ${username} (${message})`);
+    }
     if (userData) {
       userDataCache[username] = userData;
       return userData;

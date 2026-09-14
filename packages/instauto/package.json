@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "exit 0",
+    "test": "node --test src/*.test.ts",
     "check": "tsc && yarn test",
     "watch": "yarn build -w",
     "build": "tsc -p tsconfig.build.json",
