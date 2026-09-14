@@ -62,6 +62,12 @@
       "out/**/*"
     ],
     "appId": "no.mifi.simpleinstabot",
+    "electronFuses": {
+      "runAsNode": false,
+      "enableNodeOptionsEnvironmentVariable": false,
+      "enableNodeCliInspectArguments": false,
+      "onlyLoadAppFromAsar": true
+    },
     "artifactName": "${productName}-${os}.${ext}",
     "publish": [
       {
