@@ -195,6 +195,104 @@ function isInstagramUser(value: unknown): value is InstagramUser {
     && typeof isVerified === 'boolean';
 }
 
+// Instagram's web client now loads profile data through GraphQL (e.g. PolarisProfilePageContentQuery),
+// which uses a different shape (follower_count etc.) than the old web_profile_info endpoint.
+// Normalize both shapes into InstagramUser
+function normalizeInstagramUser(value: unknown): InstagramUser | undefined {
+  if (isInstagramUser(value)) return value;
+  if (!isRecord(value)) return undefined;
+
+  const {
+    id, pk, username, follower_count: followerCount, following_count: followingCount, is_private: isPrivate, is_verified: isVerified,
+    is_business: isBusiness, is_business_account: isBusinessAccount, is_professional_account: isProfessionalAccount, account_type: accountType,
+    full_name: fullName, biography, profile_pic_url: profilePicUrl, hd_profile_pic_url_info: hdProfilePicUrlInfo, external_url: externalUrl,
+    category, category_name: categoryName, business_category_name: businessCategoryName,
+  } = value;
+
+  const rawId = id ?? pk;
+  if (typeof rawId !== 'string' && typeof rawId !== 'number') return undefined;
+  if (typeof username !== 'string') return undefined;
+  if (typeof followerCount !== 'number' || typeof followingCount !== 'number') return undefined;
+  if (typeof isPrivate !== 'boolean' || typeof isVerified !== 'boolean') return undefined;
+
+  const hdProfilePicUrl = isRecord(hdProfilePicUrlInfo) ? hdProfilePicUrlInfo['url'] : undefined;
+  const isBusinessAccountNormalized = isBusiness === true || isBusinessAccount === true;
+
+  return {
+    id: String(rawId),
+    username,
+    edge_followed_by: { count: followerCount },
+    edge_follow: { count: followingCount },
+    is_private: isPrivate,
+    is_verified: isVerified,
+    is_business_account: isBusinessAccountNormalized,
+    // account_type 2 = business, 3 = creator
+    is_professional_account: isProfessionalAccount === true || isBusinessAccountNormalized || accountType === 2 || accountType === 3,
+    full_name: typeof fullName === 'string' ? fullName : '',
+    biography: typeof biography === 'string' ? biography : '',
+    profile_pic_url_hd: typeof hdProfilePicUrl === 'string' ? hdProfilePicUrl : (typeof profilePicUrl === 'string' ? profilePicUrl : ''),
+    external_url: typeof externalUrl === 'string' && externalUrl !== '' ? externalUrl : null,
+    business_category_name: typeof businessCategoryName === 'string' ? businessCategoryName : null,
+    category_name: typeof categoryName === 'string' ? categoryName : (typeof category === 'string' ? category : null),
+  };
+}
+
+// Recursively look for a `user` object (e.g. `data.user`) in a GraphQL response or relay preload cache.
+// If `username` is given, only a user with that username is accepted.
+function findUserInJson(value: unknown, username?: string, depth = 0): InstagramUser | undefined {
+  if (depth > 50) return undefined;
+
+  if (typeof value === 'string') {
+    // the relay preload cache sometimes contains a stringified JSON response
+    if (value.length > 200000 || !value.trimStart().startsWith('{') || !value.includes('"user"')) return undefined;
+    try {
+      return findUserInJson(JSON.parse(value), username, depth + 1);
+    } catch {
+      return undefined;
+    }
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const found = findUserInJson(item, username, depth + 1);
+      if (found) return found;
+    }
+    return undefined;
+  }
+
+  if (!isRecord(value)) return undefined;
+
+  if ('user' in value) {
+    const user = normalizeInstagramUser(value['user']);
+    if (user && (username == null || user.username == null || user.username.toLowerCase() === username.toLowerCase())) return user;
+  }
+
+  for (const child of Object.values(value)) {
+    const found = findUserInJson(child, username, depth + 1);
+    if (found) return found;
+  }
+  return undefined;
+}
+
+// Some GraphQL responses are streamed as multiple newline separated JSON objects
+function parseJsonChunks(text: string): unknown[] {
+  try {
+    return [JSON.parse(text)];
+  } catch {
+    const ret: unknown[] = [];
+    for (const line of text.split(/\r?\n/)) {
+      if (line.startsWith('{')) {
+        try {
+          ret.push(JSON.parse(line));
+        } catch {
+          // ignore
+        }
+      }
+    }
+    return ret;
+  }
+}
+
 // NOTE duplicated inside puppeteer page
 function shuffleArray<T>(arrayIn: T[]): T[] {
   const array = [...arrayIn];
@@ -265,6 +363,27 @@ function Instauto(db: JSONDBInstance, page: Page, options: InstautoOptions): Ins
 
   let myUsername = myUsernameIn;
   const userDataCache: Record<string, InstagramUser> = {};
+
+  // Profile data captured from GraphQL responses made by Instagram's own web client, keyed by lowercase username
+  const interceptedUsers: Record<string, InstagramUser> = {};
+
+  page.on('response', (response) => {
+    (async () => {
+      try {
+        if (!/\/graphql\/query|\/api\/graphql|\/web_profile_info\//.test(response.url())) return;
+        if (!response.ok()) return;
+        const contentType = response.headers()['content-type'] ?? '';
+        if (!contentType.includes('json')) return;
+        const text = await response.text();
+        for (const json of parseJsonChunks(text)) {
+          const user = findUserInJson(json);
+          if (user?.username) interceptedUsers[user.username.toLowerCase()] = user;
+        }
+      } catch {
+        // response body may no longer be available (e.g. after navigation) - ignore
+      }
+    })();
+  });
 
   assert(cookiesPath);
   assert(db);
@@ -490,44 +609,39 @@ function Instauto(db: JSONDBInstance, page: Page, options: InstautoOptions): Ins
     }
 
     async function getUserDataFromPage(): Promise<InstagramUser | undefined> {
+      // Instagram embeds the (relay) preloaded GraphQL profile data in <script type="application/json"> tags
       // https://github.com/mifi/instauto/issues/115#issuecomment-1199335650
-      // to test in browser: document.getElementsByTagName('html')[0].innerHTML.split('\n');
       try {
-        const body = await page.content();
-        for (let q of body.split(/\r?\n/)) {
-          if (q.includes('edge_followed_by')) {
-            // eslint-disable-next-line prefer-destructuring
-            q = q.split(',[],[')[1] ?? '';
-            // eslint-disable-next-line prefer-destructuring
-            q = q.split(']]]')[0] ?? '';
-            if (!q) return undefined;
-            const outerParsed: unknown = JSON.parse(q);
-            // eslint-disable-next-line no-underscore-dangle
-            if (!isRecord(outerParsed)) return undefined;
-            const { data } = outerParsed;
-            if (!isRecord(data)) return undefined;
-            const bbox = data['__bbox'];
-            if (!isRecord(bbox)) return undefined;
-            const { result } = bbox;
-            if (!isRecord(result)) return undefined;
-            const { response } = result;
-            if (typeof response !== 'string') return undefined;
-            q = response;
-            q = q.replaceAll('\\', '');
-            const innerParsed: unknown = JSON.parse(q);
-            if (!isRecord(innerParsed)) return undefined;
-            const innerData = innerParsed['data'];
-            if (!isRecord(innerData)) return undefined;
-            const innerUser = innerData['user'];
-            if (!isInstagramUser(innerUser)) return undefined;
-            return innerUser;
+        const scripts = await page.$$eval('script[type="application/json"]', (elements) => elements.map((element) => element.textContent ?? ''));
+        for (const script of scripts) {
+          if (!script.includes('"user"')) continue;
+          let parsed: unknown;
+          try {
+            parsed = JSON.parse(script);
+          } catch {
+            continue;
           }
+          const user = findUserInJson(parsed, username);
+          if (user) return user;
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Unknown error';
         logger.warn(`Unable to get user data from page (${message}) - This is normal`);
       }
       return undefined;
+    }
+
+    async function waitForInterceptedUserData(timeoutMs: number): Promise<InstagramUser | undefined> {
+      // the GraphQL request for profile data may still be in flight after the page has loaded
+      const deadline = Date.now() + timeoutMs;
+      for (;;) {
+        const user = interceptedUsers[username.toLowerCase()];
+        if (user) return user;
+        if (Date.now() >= deadline) return undefined;
+        await new Promise((resolve) => {
+          setTimeout(resolve, 500);
+        });
+      }
     }
 
     // intercept special XHR network request that fetches user's data and store it in a cache
@@ -570,13 +684,7 @@ function Instauto(db: JSONDBInstance, page: Page, options: InstautoOptions): Ins
           throw new Error(`web_profile_info responded with status ${foundResponse.status()} (${contentType || 'unknown content type'})`);
         }
         const jsonText = await foundResponse.text();
-        const jsonParsed: unknown = JSON.parse(jsonText);
-        if (!isRecord(jsonParsed)) return undefined;
-        const { data } = jsonParsed;
-        if (!isRecord(data)) return undefined;
-        const { user } = data;
-        if (!isInstagramUser(user)) return undefined;
-        return user;
+        return findUserInJson(JSON.parse(jsonText), username);
       } finally {
         clearTimeout(t);
       }
@@ -585,7 +693,14 @@ function Instauto(db: JSONDBInstance, page: Page, options: InstautoOptions): Ins
     logger.log('Trying to get user data from HTML');
 
     await navigateToUserWithCheck(username);
-    let userData = await getUserDataFromPage();
+    let userData = interceptedUsers[username.toLowerCase()] ?? await getUserDataFromPage();
+    if (userData) {
+      userDataCache[username] = userData;
+      return userData;
+    }
+
+    logger.log('Waiting for user data from GraphQL request');
+    userData = await waitForInterceptedUserData(10000);
     if (userData) {
       userDataCache[username] = userData;
       return userData;
@@ -593,7 +708,7 @@ function Instauto(db: JSONDBInstance, page: Page, options: InstautoOptions): Ins
 
     logger.log('Need to intercept network request to get user data');
 
-    // works for old accounts only:
+    // last resort - this endpoint is often blocked (429) nowadays
     userData = await getUserDataFromInterceptedRequest();
     if (userData) {
       userDataCache[username] = userData;
