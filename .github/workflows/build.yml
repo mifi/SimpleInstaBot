@@ -35,13 +35,6 @@ jobs:
           node-version: 22
           cache: 'yarn'
 
-      - name: Prepare for app notarization
-        if: startsWith(matrix.os, 'macos')
-        # Import Apple API key for app notarization on macOS
-        run: |
-          mkdir -p ~/private_keys/
-          echo '${{ secrets.api_key }}' > ~/private_keys/AuthKey_${{ secrets.api_key_id }}.p8
-
       - run: yarn install --immutable
       - run: yarn workspace instauto build
 
@@ -49,6 +42,3 @@ jobs:
       - run: yarn workspace simpleinstabot electron-builder
         env:
           GH_TOKEN: ${{ secrets.github_token }}
-          # macOS notarization API key
-          API_KEY_ID: ${{ secrets.api_key_id }}
-          API_KEY_ISSUER_ID: ${{ secrets.api_key_issuer_id }}
